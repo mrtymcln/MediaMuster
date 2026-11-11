@@ -75,11 +75,11 @@ namespace
 		using TestMediaEngineBento::number;
 		TestMediaEngineBento::TypedBento writer;
 		const auto uid = QByteArray::fromHex("2a0000000b00000084030000");
-		writer.head(1);
-		writer.referenceArray(1, "OMFI:ObjectSpine", mediaHeader ? QVector<quint32>{100, 300} : QVector<quint32>{100}, 1);
+		writer.head();
+		writer.referenceArray(1, "OMFI:ObjectSpine", mediaHeader ? QVector<quint32>{100, 300} : QVector<quint32>{100});
 		writer.add(100, "OMFI:ObjID", "omfi:ObjectTag", "MOBJ", true);
 		writer.add(100, "OMFI:MOBJ:MobID", "omfi:UID", uid);
-		writer.add(100, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(200, 1));
+		writer.add(100, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(200));
 		writer.add(200, "OMFI:ObjID", "omfi:ObjectTag", "CDCI", true);
 		writer.add(200, "OMFI:MDFL:SampleRate", "omfi:ExactEditRate", number<qint32>(25) + number<qint32>(1));
 		writer.add(200, "OMFI:MDFL:Length", "omfi:Long", number(length), true);

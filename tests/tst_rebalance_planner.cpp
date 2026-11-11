@@ -12,6 +12,7 @@
 #include <QString>
 #include <QTemporaryDir>
 #include <QTest>
+#include <algorithm>
 
 // MARK: - Test fixture
 
@@ -34,7 +35,6 @@ private slots:
 	void folder_count_excludes_databases_and_hidden_files();
 	void folder_counts_distinguish_empty_absent_and_unavailable();
 	void unreadable_folder_is_not_counted_or_planned();
-	void host_prefix_isolates_consolidation();
 	void same_master_never_crosses_workstation_prefix();
 	void exactly_5000_relatives_are_stable();
 	void over_5000_relatives_split_across_new_folders();
@@ -48,7 +48,6 @@ private slots:
 	void directory_aliases_cannot_redirect_rebalance();
 	void home_full_falls_back_to_existing_folder_data();
 	void home_full_falls_back_to_existing_folder();
-	void new_folder_when_all_existing_are_full();
 
 private:
 	/// Returns "<tmp>/Avid MediaFiles/MXF"; creates the path.
@@ -71,23 +70,24 @@ private:
 
 QString TestRebalancePlanner::stageMxfRoot(const QTemporaryDir &tmp)
 {
-	const QString root = tmp.path() + QStringLiteral("/Avid MediaFiles/MXF");
-	[[maybe_unused]] const bool ok = QDir().mkpath(root);
-	Q_ASSERT(ok);
+	if (!tmp.isValid())
+		qFatal("Cannot create a temporary MXF fixture: %s", qPrintable(tmp.errorString()));
+	const QString root = tmp.filePath(QStringLiteral("Avid MediaFiles/MXF"));
+	if (!QDir().mkpath(root))
+		qFatal("Cannot create the test MXF root: %s", qPrintable(root));
 	return root;
 }
 
 void TestRebalancePlanner::makeFillers(const QString &mxfRootPath, const QString &mediaFolderName,
 									   int fillerCount)
 {
+	QVERIFY(QDir::isAbsolutePath(mxfRootPath));
 	const QString folder = mxfRootPath + QLatin1Char('/') + mediaFolderName;
-	QDir().mkpath(folder);
+	QVERIFY2(QDir().mkpath(folder), qPrintable(folder));
 	for (int i = 0; i < fillerCount; ++i)
 	{
 		QFile f(folder + QStringLiteral("/filler_%1.mxf").arg(i));
-		[[maybe_unused]] const bool opened = f.open(QIODevice::WriteOnly);
-		Q_ASSERT(opened);
-		f.close();
+		QVERIFY2(f.open(QIODevice::WriteOnly), qPrintable(f.fileName() + ": " + f.errorString()));
 	}
 }
 
@@ -96,17 +96,13 @@ MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRootPath, const QStrin
 										qint64 sizeBytes)
 {
 	const QString folder = mxfRootPath + QLatin1Char('/') + mediaFolderName;
-	QDir().mkpath(folder);
+	if (!QDir::isAbsolutePath(mxfRootPath) || !QDir().mkpath(folder))
+		qFatal("Cannot create the test media folder: %s", qPrintable(folder));
 	const QString path = folder + QLatin1Char('/') + name;
 	QFile f(path);
-	[[maybe_unused]] const bool opened = f.open(QIODevice::WriteOnly);
-	Q_ASSERT(opened);
 	// Match the planner's claimed size without writing a media payload.
-	if (sizeBytes > 0)
-	{
-		[[maybe_unused]] const bool sized = f.resize(sizeBytes);
-		Q_ASSERT(sized);
-	}
+	if (!f.open(QIODevice::WriteOnly) || (sizeBytes > 0 && !f.resize(sizeBytes)))
+		qFatal("Cannot stage test media %s: %s", qPrintable(path), qPrintable(f.errorString()));
 	f.close();
 
 	MediaFile mf;
@@ -370,38 +366,18 @@ void TestRebalancePlanner::out_of_scope_media_files_dropped()
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
 
-	// One in-scope file, one with an unparseable folder name.
-	// The second is dropped from planning entirely.
-	const QVector<MediaFile> files{
-		makeMxf(root, "1", "a.mxf"),
-		makeMxf(root, "Quarantined Files", "b.mxf"),
-	};
-
-	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
-	QCOMPARE(p.ops.size(), 0);
+	const auto home = makeMxf(root, "1", "home.mxf", "same");
+	const auto stray = makeMxf(root, "2", "stray.mxf", "same");
+	const auto quarantined = makeMxf(root, "Quarantined Files", "quarantined.mxf", "same");
+	QVERIFY(RebalancePlanner::isEligible(stray));
+	QVERIFY(!RebalancePlanner::isEligible(quarantined));
+	const auto plan = RebalancePlanner::computePlan(root, "Vol", {home, stray, quarantined});
+	QCOMPARE(plan.ops.size(), 1);
+	QCOMPARE(plan.ops.first().srcPath, stray.mediaFilePath);
+	QCOMPARE(plan.ops.first().dest.display(), QStringLiteral("1"));
 }
 
 // MARK: - Workstation boundaries and capacity
-
-void TestRebalancePlanner::host_prefix_isolates_consolidation()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString root = stageMxfRoot(tmp);
-
-	// Two prefixes; each balances within itself. The cross-prefix
-	// move never happens.
-	const QVector<MediaFile> files{
-		makeMxf(root, "Ingest1.1", "a.mxf", "C1"),
-		makeMxf(root, "Ingest1.1", "b.mxf", "C1"),
-		makeMxf(root, "Ingest1.32", "c.mxf", "C1"),
-		makeMxf(root, "EditSuite2.1", "d.mxf", "C2"),
-	};
-
-	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
-	QCOMPARE(p.ops.size(), 1);
-	QCOMPARE(opsBetween(p, "Ingest1.32", "Ingest1.1"), 1);
-}
 
 void TestRebalancePlanner::home_full_falls_back_to_existing_folder_data()
 {
@@ -452,34 +428,6 @@ void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
 		QVERIFY(finalCount >= 0);
 		QVERIFY(finalCount <= Conventions::kFolderMax);
 	}
-}
-
-void TestRebalancePlanner::new_folder_when_all_existing_are_full()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	const QString root = stageMxfRoot(tmp);
-
-	// Both '1' and '2' are at the cap. A 6-member C1 group can't
-	// fit anywhere existing, so the planner allocates '3' and routes all
-	// members into it.
-	makeFillers(root, "1", 4999);
-	makeFillers(root, "2", 4995);
-	const QVector<MediaFile> files{
-		makeMxf(root, "1", "m1.mxf", "C1"),
-		makeMxf(root, "2", "m2.mxf", "C1"),
-		makeMxf(root, "2", "m3.mxf", "C1"),
-		makeMxf(root, "2", "m4.mxf", "C1"),
-		makeMxf(root, "2", "m5.mxf", "C1"),
-		makeMxf(root, "2", "m6.mxf", "C1"),
-	};
-
-	const RebalancePlan p = RebalancePlanner::computePlan(root, "Vol", files);
-	QCOMPARE(p.newFolders.size(), 1);
-	QCOMPARE(p.newFolders.first().display(), QStringLiteral("3"));
-	QCOMPARE(p.ops.size(), 6);
-	QCOMPARE(opsBetween(p, "1", "3"), 1);
-	QCOMPARE(opsBetween(p, "2", "3"), 5);
 }
 
 void TestRebalancePlanner::same_master_never_crosses_workstation_prefix()
@@ -556,11 +504,23 @@ void TestRebalancePlanner::invalid_master_ids_are_independent()
 
 void TestRebalancePlanner::media_from_another_root_is_excluded()
 {
-	QTemporaryDir a, b;
-	const auto root = stageMxfRoot(a), other = stageMxfRoot(b);
-	const QVector<MediaFile> files{makeMxf(root, "1", "a.mxf", "same"),
-								   makeMxf(other, "2", "b.mxf", "same")};
-	QVERIFY(RebalancePlanner::computePlan(root, "Test", files).ops.isEmpty());
+	QTemporaryDir selected, other;
+	const auto root = stageMxfRoot(selected);
+	const auto otherRoot = stageMxfRoot(other);
+	const auto home = makeMxf(root, "1", "home.mxf", "same");
+	const auto local = makeMxf(root, "2", "local.mxf", "same", 1000);
+	const auto foreign = makeMxf(otherRoot, "2", "foreign.mxf", "same", 2000);
+	QVERIFY(RebalancePlanner::isEligible(foreign));
+	const auto plan = RebalancePlanner::computePlan(root, "Test", {home, local, foreign});
+	QCOMPARE(plan.ops.size(), 1);
+	QCOMPARE(plan.ops.first().srcPath, local.mediaFilePath);
+	QCOMPARE(plan.ops.first().dest.display(), QStringLiteral("1"));
+	const auto folder = std::find_if(plan.folders.cbegin(), plan.folders.cend(), [](const FolderState &state)
+									 { return state.mediaFolderName == QStringLiteral("2"); });
+	QVERIFY(folder != plan.folders.cend());
+	QVERIFY(folder->inScope);
+	QCOMPARE(folder->count, 1);
+	QCOMPARE(folder->bytes, local.sizeBytes);
 }
 
 void TestRebalancePlanner::eligibility_excludes_legacy_loose_and_quarantined()

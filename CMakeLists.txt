@@ -53,6 +53,7 @@ if(APPLE)
 endif()
 
 option(MEDIAMUSTER_BUILD_TESTS "Build the MediaMuster test suite" ON)
+option(MEDIAMUSTER_BUILD_STRESS_TESTS "Include resource-intensive tests in the MediaMuster test suite" OFF)
 
 set(qt_components Widgets Core Gui Concurrent)
 if(MEDIAMUSTER_BUILD_TESTS)

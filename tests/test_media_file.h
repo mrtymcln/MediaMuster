@@ -1,9 +1,6 @@
 #pragma once
 
-#include "scanner/media_labels.h"
 #include "media/media_file.h"
-
-#include <utility>
 
 // UI fixtures contain Bella's already selected values. They neither invoke a
 // reader nor manufacture source evidence for presentation-only tests.
@@ -50,18 +47,5 @@ namespace TestMediaFile
 		row.durationTimecode = row.timing.duration && row.timing.display
 								   ? Bella::durationTimecode(*row.timing.duration, rate, base, row.timing.display->mode).value_or(std::tuple<qint64, int, int, int>{-1, 0, 0, 0})
 								   : std::tuple<qint64, int, int, int>{-1, 0, 0, 0};
-	}
-
-	inline QVector<MediaFile> seeded(QVector<MediaFile> files)
-	{
-		for (auto &file : files)
-		{
-			if (!file.operationScanReceipt)
-				file.operationScanReceipt.emplace();
-			const auto names = Bella::effectNamesFor(file.type == MediaFile::Type::Precompute, file.clipName);
-			file.effect = names.effectDisplayText;
-			file.effectCategory = names.effectCategoryText;
-		}
-		return files;
 	}
 } // namespace TestMediaFile

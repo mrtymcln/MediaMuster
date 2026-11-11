@@ -90,7 +90,6 @@ private slots:
 	void malformed_counts_lengths_and_references_data();
 	void malformed_counts_lengths_and_references();
 	void file_larger_than_256_mib_preserves_identities();
-	void large_object_inventory_has_no_policy_limit();
 	void reference_list_above_one_million_entries();
 	void terminal_source_nulls_are_ignored_data();
 	void terminal_source_nulls_are_ignored();
@@ -334,18 +333,18 @@ void TestAvbBinLoader::malformed_locator_keeps_other_proven_file_ids()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	TestAvb::Document d;
-	auto bad = TestAvb::mediaLocator(false);
+	auto bad = TestAvb::mediaLocator(false, TestAvb::Other);
 	bad[10] = char(0xff); // volume-name length runs beyond the object
 	bad[11] = char(0x7f);
 	d.objects.append(TestAvb::Document::Object{"ABIN", {}});
 	const auto modern = TestAvb::appendFileSource(d, TestAvb::mediaLocator(false));
-	const auto native = TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Source, false));
-	const auto malformed = TestAvb::appendFileSource(d, bad);
+	const auto native = TestAvb::appendFileSource(d, TestAvb::mediaLocator(false, TestAvb::Master, false), TestAvb::Master);
+	const auto malformed = TestAvb::appendFileSource(d, bad, TestAvb::Other);
 	d.objects[0].payload = TestAvb::bin(false, {modern, native, malformed});
 	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("bad.avb"), d.bytes()));
 	QVERIFY(result.usable && !result.coverageComplete);
 	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
-	QCOMPARE(result.mediaFileIds.legacyKeys.size(), 1); // Only the separately complete legacy locator.
+	QCOMPARE(result.mediaFileIds.legacyKeys, QSet<QString>{QString::fromLatin1(TestAvb::Master.mid(16, 8).toHex())});
 	QVERIFY(!result.warnings.isEmpty());
 }
 
@@ -531,35 +530,6 @@ void TestAvbBinLoader::file_larger_than_256_mib_preserves_identities()
 	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
 }
 
-void TestAvbBinLoader::large_object_inventory_has_no_policy_limit()
-{
-	QTemporaryDir tmp;
-	QVERIFY(tmp.isValid());
-	TestAvb::Document document;
-	document.objects = {{"ABIN", {}}};
-	const auto listed = TestAvb::appendFileSource(document, TestAvb::mediaLocator(false));
-	document.objects[0].payload = TestAvb::bin(false, {listed});
-	auto bytes = document.bytes();
-	// Exercise a large object count without imposing an estimated-memory cutoff.
-	constexpr quint32 extraObjects = 2'097'152;
-	TestAvb::replaceU32(bytes, document.countOffset, extraObjects + quint32(document.objects.size()));
-	TestAvb::Bytes object(false);
-	object.fourcc("ZZZZ");
-	object.u32(1);
-	object.u8(3);
-	QFile file(tmp.filePath("many-objects.avb"));
-	QVERIFY(file.open(QIODevice::WriteOnly));
-	QCOMPARE(file.write(bytes), bytes.size());
-	const auto objects = object.data.repeated(extraObjects);
-	QCOMPARE(file.write(objects), objects.size());
-	file.close();
-	const auto result = AvbBinLoader::load(file.fileName());
-	QVERIFY2(result.usable, qPrintable(result.error));
-	QVERIFY(!result.coverageComplete); // Opaque unknown objects cannot establish complete coverage.
-	QVERIFY(!result.warnings.isEmpty());
-	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
-}
-
 void TestAvbBinLoader::reference_list_above_one_million_entries()
 {
 	QTemporaryDir tmp;
@@ -631,7 +601,7 @@ void TestAvbBinLoader::typed_mob_field_framing_is_validated_data()
 {
 	QTest::addColumn<QByteArray>("bytes");
 	QTest::addColumn<bool>("valid");
-	QTest::addColumn<bool>("resolved");
+	QTest::addColumn<QSet<QString>>("expectedFileIds");
 	for (const bool big : {false, true})
 	{
 		const QVector<TestAvb::Document::Object> objects = {
@@ -644,11 +614,13 @@ void TestAvbBinLoader::typed_mob_field_framing_is_validated_data()
 				d.bigEndian = big;
 				d.objects = {{"ABIN", {}}, {object.type, payload}};
 				quint32 listed = 2;
+				QByteArray mediaId;
 				if (object.type == "MSML")
 				{
 					listed = 3;
 					d.objects.append({"CMPO", TestAvb::composition(big, TestAvb::Master, "Locator owner", 0, {}, 0, true, 4, 3)});
 					d.objects.append({"MDFL", TestAvb::fileDescriptor(big, 2)});
+					mediaId = TestAvb::Source;
 				}
 				else if (object.type == "MCMR")
 				{
@@ -660,10 +632,13 @@ void TestAvbBinLoader::typed_mob_field_framing_is_validated_data()
 				{
 					listed = 3;
 					d.objects.append({"CMPO", TestAvb::composition(big, TestAvb::Master, "Component owner", 0, {2})});
+					mediaId = object.type == "SCLP" ? TestAvb::Source : TestAvb::Other;
+					TestAvb::appendFileSource(d, TestAvb::mediaLocator(big, mediaId), mediaId);
 				}
 				d.objects[0].payload = TestAvb::bin(big, {listed});
+				const QSet<QString> expectedFileIds = valid && !mediaId.isEmpty() ? QSet<QString>{MobId::format(mediaId)} : QSet<QString>{};
 				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(object.type), big ? "BE" : "LE", label)))
-					<< d.bytes() << valid << (object.type != "SCLP" && object.type != "ASPI");
+					<< d.bytes() << valid << expectedFileIds;
 			};
 			add("valid", object.payload, true);
 			// Each fixture ends with a 49-byte typed ID and the object terminator.
@@ -687,32 +662,33 @@ void TestAvbBinLoader::typed_mob_field_framing_is_validated()
 {
 	QFETCH(QByteArray, bytes);
 	QFETCH(bool, valid);
-	QFETCH(bool, resolved);
+	QFETCH(QSet<QString>, expectedFileIds);
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("typed-fields.avb"), bytes));
 	QVERIFY(result.usable); // The independently framed root is still usable.
-	QCOMPARE(result.coverageComplete, valid && resolved);
-	if (!valid)
-	{
-		QVERIFY(!result.warnings.isEmpty());
-		QVERIFY(result.mediaFileIds.isEmpty());
-	}
+	QVERIFY2(result.coverageComplete == valid, qPrintable(result.warnings.join('\n')));
+	QCOMPARE(result.warnings.isEmpty(), valid);
+	QCOMPARE(result.mediaFileIds.fullIds, expectedFileIds);
+	QVERIFY(result.mediaFileIds.legacyKeys.isEmpty());
 }
 
 void TestAvbBinLoader::unknown_identity_extension_is_incomplete()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	auto d = graph(false);
-	auto &payload = d.objects[1].payload;
+	TestAvb::Document document;
+	document.objects = {{"ABIN", TestAvb::bin(false, {2})}, {"CMPO", TestAvb::composition(false)}};
+	const auto complete = AvbBinLoader::load(TestAvb::write(tmp.filePath("known-identity.avb"), document.bytes()));
+	QVERIFY2(complete.coverageComplete, qPrintable(complete.warnings.join('\n')));
+	auto &payload = document.objects[1].payload;
 	// Add a future extension after the known binary identity. Its meaning
 	// cannot be guessed from the bytes, even though the document is framed.
 	payload.insert(payload.size() - 1, QByteArray::fromHex("017f4100000000"));
-	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("new-extension.avb"), d.bytes()));
+	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("new-extension.avb"), document.bytes()));
 	QVERIFY2(result.usable, qPrintable(result.error));
 	QVERIFY(!result.coverageComplete);
-	QVERIFY(!result.warnings.isEmpty());
+	QVERIFY(result.warnings.join('\n').contains(QStringLiteral("AVB object 2 (CMPO)")));
 }
 
 void TestAvbBinLoader::dependency_lists_validate_references_data()
@@ -723,19 +699,15 @@ void TestAvbBinLoader::dependency_lists_validate_references_data()
 		for (const bool big : {false, true})
 			for (const bool valid : {false, true})
 			{
-				auto d = graph(big);
-				const quint32 reference = valid ? 7 : 8;
-				if (type == "SEQU")
-				{
-					d.objects[2] = {type, TestAvb::sequence(big, {reference})};
-					d.objects.append({"SCLP", TestAvb::sourceClip(big)});
-				}
-				else
-				{
-					d.objects[5] = {type, TestAvb::referenceList(big, {reference}, type == "TMCS")};
-					d.objects.append({"MCMR", TestAvb::mobReference(big)});
-				}
-				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(type), big ? "BE" : "LE", valid ? "valid" : "bad-reference"))) << d.bytes() << valid;
+				TestAvb::Document document;
+				document.bigEndian = big;
+				document.objects = {{"ABIN", {}}, {type, {}}};
+				const auto listed = TestAvb::appendFileSource(document, TestAvb::mediaLocator(big));
+				document.objects[0].payload = TestAvb::bin(big, {listed});
+				const quint32 reference = valid ? listed : 6;
+				document.objects[1].payload = type == "SEQU" ? TestAvb::sequence(big, {reference})
+															 : TestAvb::referenceList(big, {reference}, type == "TMCS");
+				QTest::newRow(qPrintable(QString("%1-%2-%3").arg(QString::fromLatin1(type), big ? "BE" : "LE", valid ? "valid" : "bad-reference"))) << document.bytes() << valid;
 			}
 }
 
@@ -746,25 +718,29 @@ void TestAvbBinLoader::dependency_lists_validate_references()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("dependency.avb"), bytes));
-	QVERIFY(result.usable);
-	QVERIFY(!result.coverageComplete); // Missing references qualify coverage, not known independent fields.
-	QVERIFY(!result.warnings.isEmpty());
-	QVERIFY(result.mediaFileIds.isEmpty());
-	Q_UNUSED(valid);
+	QVERIFY2(result.usable, qPrintable(result.error));
+	QVERIFY2(result.coverageComplete == valid, qPrintable(result.warnings.join('\n')));
+	if (!valid)
+		QVERIFY(result.warnings.join('\n').contains(QStringLiteral("refers to unavailable object 6")));
+	QCOMPARE(result.mediaFileIds.fullIds, QSet<QString>{MobId::format(TestAvb::Source)});
+	QVERIFY(result.mediaFileIds.legacyKeys.isEmpty());
 }
 
 void TestAvbBinLoader::unknown_component_version_is_incomplete()
 {
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
-	auto d = graph(false);
-	d.objects[2] = {"SEQU", TestAvb::sequence(false, {7})};
-	d.objects.append({"SCLP", TestAvb::sourceClip(false)});
-	d.objects[2].payload[1] = '\x7f';
-	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("new-component.avb"), d.bytes()));
+	TestAvb::Document document;
+	document.objects = {{"ABIN", TestAvb::bin(false, {2})},
+						{"CMPO", TestAvb::composition(false, TestAvb::Master, "Component owner", 0, {3})},
+						{"SEQU", TestAvb::sequence(false, {})}};
+	const auto complete = AvbBinLoader::load(TestAvb::write(tmp.filePath("known-component.avb"), document.bytes()));
+	QVERIFY2(complete.coverageComplete, qPrintable(complete.warnings.join('\n')));
+	document.objects[2].payload[1] = '\x7f';
+	const auto result = AvbBinLoader::load(TestAvb::write(tmp.filePath("new-component.avb"), document.bytes()));
 	QVERIFY2(result.usable, qPrintable(result.error));
 	QVERIFY(!result.coverageComplete);
-	QVERIFY(!result.warnings.isEmpty());
+	QVERIFY(result.warnings.join('\n').contains(QStringLiteral("AVB object 3 (SEQU)")));
 }
 
 // MARK: - Cancellation and legacy identities

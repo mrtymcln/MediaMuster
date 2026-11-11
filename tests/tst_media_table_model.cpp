@@ -7,7 +7,6 @@
 #include "media/media_csv.h"
 #include "ui/media_table_model.h"
 #include "operations/operation_request.h"
-#include "test_media_file.h"
 #include "media/mob_id_text.h"
 #include "storage/volume_identity.h"
 
@@ -19,8 +18,10 @@
 #include <QTest>
 #include <QTemporaryDir>
 #include <QFile>
+#include <array>
 #include <initializer_list>
 #include <limits>
+#include <utility>
 
 // MARK: - Test helpers
 
@@ -40,13 +41,16 @@ namespace
 		return file;
 	}
 
-	Bella::MobId selectedId()
+	Bella::MobId aafIdFromHex(const QByteArray &hex)
 	{
-		return std::get<Bella::MobId>(Bella::normalizeMobId(
-			QByteArray::fromHex("060a2b340101010501010f1013000000443322116655887799aabbccddeeff00"),
-			Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian));
+		return std::get<Bella::MobId>(Bella::normalizeMobId(QByteArray::fromHex(hex),
+															Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian));
 	}
 
+	Bella::MobId selectedId()
+	{
+		return aafIdFromHex("060a2b340101010501010f1013000000443322116655887799aabbccddeeff00");
+	}
 }
 
 // MARK: - Test fixture
@@ -88,10 +92,9 @@ private slots:
 	void effect_columns_only_display_precompute_details();
 	void precompute_categories_and_unknown_effects_display_consistently();
 
-	// The model displays prepared values without retaining their working evidence.
+	// The model displays the values prepared by the scan.
 	void prepared_metadata_reaches_table_cells();
 	void selected_master_reaches_table();
-	void prepared_scan_load_releases_temporary_results();
 
 private:
 	/// Build `n` MediaFiles with sequential filePaths, nothing else.
@@ -170,7 +173,7 @@ void TestMediaTableModel::row_removal_preserves_rows_and_notifications()
 	QFETCH(QStringList, remainingPaths);
 	MediaTableModel model;
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
-	model.setMediaFiles(TestMediaFile::seeded(makeRows(initialCount)));
+	model.setMediaFiles(makeRows(initialCount));
 	QSignalSpy aboutSpy(&model, &QAbstractItemModel::rowsAboutToBeRemoved);
 	QSignalSpy doneSpy(&model, &QAbstractItemModel::rowsRemoved);
 
@@ -198,7 +201,7 @@ void TestMediaTableModel::location_cell_shows_the_full_path()
 	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/8646/V01.abc.mxf");
 
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({f}));
+	model.setMediaFiles({f});
 	const QModelIndex idx =
 		model.index(0, Enum::toUnderlying(MediaTableModel::Column::Location));
 
@@ -232,51 +235,63 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	const QString original = put("original.mxf");
 	const QString copy = put("copy.mxf");
 	const QString moved = put("moved.mxf");
-	QVERIFY(!original.isEmpty() && !copy.isEmpty() && !moved.isEmpty());
+	const QString neighbor = put("neighbor.mxf");
+	QVERIFY(!original.isEmpty() && !copy.isEmpty() && !moved.isEmpty() && !neighbor.isEmpty());
 	MediaTableModel model;
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
-	MediaFile originalRow;
-	QWeakPointer<Bella::ScanResult> temporaryScan;
+	const auto makeScannedRow = [](const QString &path, const Bella::MobId &fileMobId,
+								   const Bella::MobId &masterMobId, const Bella::OperationSafety &safety)
 	{
-		auto scan = QSharedPointer<Bella::ScanResult>::create();
-		temporaryScan = scan;
+		const QFileInfo info(path);
 		Bella::ScanEntry entry;
-		entry.path = original;
-		entry.volumeIdentifier = VolumeIdentity::capture(original).identifier();
-		entry.sizeBytes = QFileInfo(original).size();
-		entry.modified = QFileInfo(original).lastModified();
+		entry.path = path;
+		entry.volumeIdentifier = VolumeIdentity::capture(path).identifier();
+		entry.sizeBytes = info.size();
+		entry.modified = info.lastModified();
 		entry.match.localReference = Bella::LocalReference::Listed;
-		entry.match.metadata.fileMobId = selectedId();
-		entry.match.metadata.masterMobId = selectedId();
-		entry.match.metadata.compression.compressionName = QStringLiteral("Avid DNx HQX");
+		entry.match.metadata.fileMobId = fileMobId;
+		entry.match.metadata.masterMobId = masterMobId;
+		entry.match.metadata.compression.compressionName = QStringLiteral("DNx HQX");
 		entry.match.metadata.bitDepth.bits = 10;
-		entry.operationSafety = Bella::VerifyFileId{selectedId(), headerSkipped ? Bella::FileIdOrigin::Database
-																				: Bella::FileIdOrigin::Header};
-		scan->entries.append(std::move(entry));
-		originalRow = bellaMediaFile(scan->entries.first());
-	}
-	QVERIFY(temporaryScan.isNull());
+		entry.operationSafety = safety;
+		return bellaMediaFile(entry);
+	};
+	const auto fileIdOrigin = headerSkipped ? Bella::FileIdOrigin::Database : Bella::FileIdOrigin::Header;
+	const auto originalRow = makeScannedRow(original, selectedId(), selectedId(), Bella::VerifyFileId{selectedId(), fileIdOrigin});
+	const auto neighborRow = makeScannedRow(neighbor,
+											aafIdFromHex("060a2b340101010501010f1013000000a1a2a3a4a5a6a7a8a9aaabacadaeafb0"),
+											aafIdFromHex("060a2b340101010501010f1013000000b1b2b3b4b5b6b7b8b9babbbcbdbebfc0"),
+											Bella::RescanReason::FileChanged);
 	QVERIFY(originalRow.operationScanReceipt);
-	const auto checks = *originalRow.operationScanReceipt;
-	QCOMPARE(checks.headerIdentity.fileMobId, headerSkipped ? QString{} : originalRow.fileMobId);
-	QVERIFY(checks.headerIdentity.masterMobIds.isEmpty());
-	QCOMPARE(checks.databaseFileMobIdToVerify, headerSkipped ? originalRow.fileMobId : QString{});
-	model.setMediaFiles({originalRow});
+	const auto &originalChecks = *originalRow.operationScanReceipt;
+	QCOMPARE(originalChecks.headerIdentity.fileMobId, headerSkipped ? QString{} : originalRow.fileMobId);
+	QVERIFY(originalChecks.headerIdentity.masterMobIds.isEmpty());
+	QCOMPARE(originalChecks.databaseFileMobIdToVerify, headerSkipped ? originalRow.fileMobId : QString{});
+	QVERIFY(neighborRow.fileMobId != originalRow.fileMobId);
+	QVERIFY(neighborRow.masterMobId != originalRow.masterMobId);
+	QVERIFY(neighborRow.operationScanReceipt);
+	QVERIFY(!neighborRow.operationScanReceipt->headerIdentity.unavailableReason.isEmpty());
+	model.setMediaFiles({originalRow, neighborRow});
+	constexpr int neighborIndex = 1;
+	constexpr int copyIndex = 2;
 	const KelpieId originalId = model.allFiles().first().kelpieId;
+	const KelpieId neighborId = model.fileAt(neighborIndex).kelpieId;
 	QVERIFY(originalId != 0);
 	const QPersistentModelIndex noDatabase(model.index(0, int(MediaTableModel::Column::NoDatabase)));
 	const QPersistentModelIndex noReference(model.index(0, int(MediaTableModel::Column::NoReference)));
 	QCOMPARE(noDatabase.data().toString(), QStringLiteral("false"));
 	QCOMPARE(noReference.data().toString(), QStringLiteral("false"));
 	model.applyTransfer(original, copy, true);
-	QCOMPARE(model.rowCount(), 2);
+	QCOMPARE(model.rowCount(), 3);
 	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
-	QVERIFY(model.allFiles()[1].kelpieId != originalId);
-	QCOMPARE(model.allFiles()[0].masterMobId, model.allFiles()[1].masterMobId);
+	QVERIFY(model.fileAt(copyIndex).kelpieId != originalId);
+	QVERIFY(model.fileAt(copyIndex).kelpieId != neighborId);
+	QCOMPARE(model.allFiles()[0].masterMobId, model.fileAt(copyIndex).masterMobId);
 	QCOMPARE(model.allFiles()[0].mediaFilePath, original);
-	QCOMPARE(model.allFiles()[1].dbStatus, MediaFile::DbStatus::NoDatabase);
-	QCOMPARE(model.index(1, int(MediaTableModel::Column::NoDatabase)).data().toString(), QStringLiteral("true"));
-	QCOMPARE(model.index(1, int(MediaTableModel::Column::NoReference)).data().toString(), QStringLiteral("false"));
+	QCOMPARE(model.fileAt(copyIndex).mediaFilePath, copy);
+	QCOMPARE(model.fileAt(copyIndex).dbStatus, MediaFile::DbStatus::NoDatabase);
+	QCOMPARE(model.index(copyIndex, int(MediaTableModel::Column::NoDatabase)).data().toString(), QStringLiteral("true"));
+	QCOMPARE(model.index(copyIndex, int(MediaTableModel::Column::NoReference)).data().toString(), QStringLiteral("false"));
 	QVERIFY(!put("future.pmr").isEmpty()); // Presence cannot prove membership without parsing this database.
 	model.applyTransfer(original, moved, false);
 	QCOMPARE(model.allFiles()[0].dbStatus, MediaFile::DbStatus::DbUnreadable);
@@ -284,18 +299,25 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QVERIFY(noReference.isValid());
 	QCOMPARE(noDatabase.data().toString(), QStringLiteral("true"));
 	QCOMPARE(noReference.data().toString(), QStringLiteral("false"));
-	QCOMPARE(model.rowCount(), 2);
+	QCOMPARE(model.rowCount(), 3);
 	QCOMPARE(model.allFiles()[0].kelpieId, originalId);
 	QCOMPARE(model.allFiles()[0].scanStamp.path, moved);
 	QCOMPARE(model.allFiles()[0].mediaFilePath, moved);
-	for (const auto &file : model.allFiles())
+	QCOMPARE(model.fileAt(neighborIndex).kelpieId, neighborId);
+	QCOMPARE(model.fileAt(neighborIndex).mediaFilePath, neighbor);
+	QCOMPARE(model.fileAt(neighborIndex).dbStatus, MediaFile::DbStatus::Listed);
+	const std::array expectedRows{&originalRow, &neighborRow, &originalRow};
+	for (std::size_t index = 0; index < expectedRows.size(); ++index)
 	{
-		QCOMPARE(file.compression, originalRow.compression);
-		QCOMPARE(file.bitDepthDisplay(), originalRow.bitDepthDisplay());
-		QCOMPARE(file.fileMobId, originalRow.fileMobId);
-		QCOMPARE(file.masterMobId, originalRow.masterMobId);
-		QCOMPARE(file.scanStamp.masterMobId, originalRow.masterMobId);
-		QVERIFY(temporaryScan.isNull());
+		const auto &file = model.fileAt(static_cast<int>(index));
+		const auto &expected = *expectedRows[index];
+		const auto &checks = *expected.operationScanReceipt;
+		QCOMPARE(file.compression, expected.compression);
+		QCOMPARE(file.bitDepthDisplay(), expected.bitDepthDisplay());
+		QCOMPARE(file.fileMobId, expected.fileMobId);
+		QCOMPARE(file.masterMobId, expected.masterMobId);
+		QCOMPARE(file.scanStamp.fileMobId, expected.fileMobId);
+		QCOMPARE(file.scanStamp.masterMobId, expected.masterMobId);
 		QVERIFY(file.operationScanReceipt);
 		QCOMPARE(file.operationScanReceipt->headerIdentity.fileMobId, checks.headerIdentity.fileMobId);
 		QCOMPARE(file.operationScanReceipt->headerIdentity.masterMobIds, checks.headerIdentity.masterMobIds);
@@ -304,9 +326,11 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		QCOMPARE(file.scanStamp.path, file.mediaFilePath);
 		QCOMPARE(file.scanStamp.modified, file.modified);
 		QCOMPARE(file.scanStamp.volumeIdentifier, VolumeIdentity::capture(file.mediaFilePath).identifier());
-		// A later operation uses the frozen checks after all temporary owners expired.
+		// A later operation uses the frozen scan checks at the updated location.
 		const auto item = operationItemFromMediaFile(file);
 		QVERIFY(item.headerIdentity);
+		QCOMPARE(item.fileMobId, expected.fileMobId);
+		QCOMPARE(item.masterMobId, expected.masterMobId);
 		QCOMPARE(item.headerIdentity->fileMobId, checks.headerIdentity.fileMobId);
 		QCOMPARE(item.headerIdentity->masterMobIds, checks.headerIdentity.masterMobIds);
 		QCOMPARE(item.headerIdentity->unavailableReason, checks.headerIdentity.unavailableReason);
@@ -315,7 +339,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		QCOMPARE(item.scanVolumeIdentifier, file.scanStamp.volumeIdentifier);
 		QCOMPARE(item.modifiedMs, file.modified.toMSecsSinceEpoch());
 	}
-	model.setMediaFiles(TestMediaFile::seeded({row(copy)}));
+	model.setMediaFiles({row(copy)});
 	QCOMPARE(model.allFiles()[0].kelpieId, KelpieId(1));
 }
 
@@ -328,7 +352,7 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 	MediaFile file = row();
 	file.omfEra = true;
 	file.bellaValues.emplace().durationTimecode = {0, 0, 0, 19};
-	model.setMediaFiles(TestMediaFile::seeded({file}));
+	model.setMediaFiles({file});
 	const QPersistentModelIndex duration(model.index(0, int(MediaTableModel::Column::Duration)));
 	for (bool omf : {true, false, true})
 	{
@@ -338,6 +362,8 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 		{
 			model.setPrecomputesEnabled(precompute);
 			QCOMPARE(model.columnCount(), 20 + int(omf) + 3 * int(precompute));
+			for (int column = 0; column < model.omfScanColumn(); ++column)
+				QCOMPARE(model.columnIndex(model.columnAt(column)), column);
 			QVERIFY(duration.isValid());
 			QCOMPARE(duration.column(), int(MediaTableModel::Column::Duration));
 			QCOMPARE(duration.data().toString(), QStringLiteral("00:00:00:19"));
@@ -360,10 +386,11 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 
 	MediaFile withoutDate;
 	withoutDate.mediaFilePath = QStringLiteral("/vol/b.mxf");
+	withoutDate.modified = QDateTime(QDate(2026, 7, 21), QTime(9, 45));
 	// created left invalid — a filesystem that records no birth time.
 
 	MediaTableModel m;
-	m.setMediaFiles(TestMediaFile::seeded({withDate, withoutDate}));
+	m.setMediaFiles({withDate, withoutDate});
 	const int col = int(MediaTableModel::Column::Created);
 
 	QCOMPARE(m.index(0, col).data(Qt::DisplayRole).toString(),
@@ -409,7 +436,7 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	MediaTableModel m;
 	MediaFile unlisted;
 	unlisted.dbStatus = DbStatus::NoReference;
-	m.setMediaFiles(TestMediaFile::seeded({unlisted}));
+	m.setMediaFiles({unlisted});
 	const int col = int(MediaTableModel::Column::Project);
 	QCOMPARE(m.index(0, col).data(Qt::DisplayRole).toString(), QStringLiteral("No project"));
 	const QString tip = m.index(0, col).data(Qt::ToolTipRole).toString();
@@ -492,7 +519,7 @@ void TestMediaTableModel::unknown_classification_displays_without_guessing()
 	audio.kind = MediaFile::Kind::Audio;
 	audio.type = MediaFile::Type::Precompute;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({unknown, video, audio}));
+	model.setMediaFiles({unknown, video, audio});
 	const int kind = int(MediaTableModel::Column::Kind);
 	const int type = int(MediaTableModel::Column::Type);
 	QCOMPARE(model.index(0, kind).data().toString(), QStringLiteral("unknown"));
@@ -511,7 +538,7 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 {
 	MediaTableModel model;
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
-	model.setMediaFiles(TestMediaFile::seeded(makeRows(2)));
+	model.setMediaFiles(makeRows(2));
 	const QStringList baseHeaders{
 		QStringLiteral("Clip Name"), QStringLiteral("Project"), QStringLiteral("Bin"),
 		QStringLiteral("Kind"), QStringLiteral("Duration"), QStringLiteral("Size (MB)"),
@@ -558,16 +585,18 @@ void TestMediaTableModel::effect_columns_only_display_precompute_details()
 {
 	MediaFile precompute;
 	precompute.type = MediaFile::Type::Precompute;
-	precompute.clipName = QStringLiteral("Sequence,3D_Warp+1");
+	precompute.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	precompute.effect = QStringLiteral("3D Warp");
+	precompute.effectCategory = QStringLiteral("Blend");
 	MediaFile media = precompute;
 	media.type = MediaFile::Type::Media;
 	MediaFile unknown = precompute;
 	unknown.type = MediaFile::Type::Unknown;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({precompute, media, unknown}));
+	model.setMediaFiles({precompute, media, unknown});
 	model.setPrecomputesEnabled(true);
 	const QStringList headers{QStringLiteral("Precompute Category"), QStringLiteral("Effect Category"), QStringLiteral("Effect")};
-	const QStringList values{QString{}, QStringLiteral("Blend"), QStringLiteral("3D Warp")};
+	const QStringList values{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")};
 	for (int i = 0; i < values.size(); ++i)
 	{
 		const int column = int(MediaTableModel::Column::PrecomputeCategory) + i;
@@ -587,7 +616,7 @@ void TestMediaTableModel::precompute_categories_and_unknown_effects_display_cons
 	rendered.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 	title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({rendered, title, unknown, MediaFile{}}));
+	model.setMediaFiles({rendered, title, unknown, MediaFile{}});
 	model.setPrecomputesEnabled(true);
 	const int category = int(MediaTableModel::Column::PrecomputeCategory);
 	QCOMPARE(model.index(0, category).data().toString(), QStringLiteral("Rendered Effects"));
@@ -604,6 +633,7 @@ void TestMediaTableModel::precompute_categories_and_unknown_effects_display_cons
 void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 {
 	Bella::ScanEntry entry;
+	entry.kelpieId = 91;
 	entry.path = QStringLiteral("/media/clip.mxf");
 	entry.match.localReference = Bella::LocalReference::NoReference;
 	entry.match.metadata.type = Bella::MatchType::Precompute;
@@ -615,6 +645,7 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	model.setPrecomputesEnabled(true);
 	model.setMediaFiles({file});
 	const auto &current = model.fileAt(0);
+	QCOMPARE(current.kelpieId, entry.kelpieId);
 	QCOMPARE(current.type, MediaFile::Type::Precompute);
 	QCOMPARE(current.dbStatus, MediaFile::DbStatus::NoReference);
 	QCOMPARE(current.clipName, QStringLiteral("Sequence,3D_Warp+1"));
@@ -639,40 +670,6 @@ void TestMediaTableModel::selected_master_reaches_table()
 	QCOMPARE(current.masterMobId, masterId());
 	QCOMPARE(model.index(0, int(MediaTableModel::Column::MasterMobId)).data().toString(), masterId());
 	QVERIFY(MediaCsv::rowLine(current).contains(masterId()));
-}
-
-void TestMediaTableModel::prepared_scan_load_releases_temporary_results()
-{
-	MediaTableModel model;
-	model.setPrecomputesEnabled(true);
-	QWeakPointer<Bella::ScanResult> temporaryScan;
-	MediaFile file;
-	{
-		auto scan = QSharedPointer<Bella::ScanResult>::create();
-		temporaryScan = scan;
-		Bella::ScanEntry entry;
-		entry.kelpieId = 91;
-		entry.path = QStringLiteral("/media/clip.mxf");
-		entry.match.metadata.clipName = QStringLiteral("Header clip");
-		entry.match.metadata.originalBin = QStringLiteral("MDB bin");
-		scan->entries.append(std::move(entry));
-		file = bellaMediaFile(scan->entries.first());
-		// Insertion displays the prepared row without reselecting its metadata.
-		file.clipName = QStringLiteral("Prepared clip label");
-		model.setMediaFiles({file});
-	}
-	QVERIFY(temporaryScan.isNull());
-	QCOMPARE(model.rowCount(), 1);
-	const auto expectedCsv = MediaCsv::rowLine(file);
-	QSignalSpy changed(&model, &QAbstractItemModel::dataChanged);
-	const auto &current = model.fileAt(0);
-	QCOMPARE(current.kelpieId, KelpieId(91));
-	QCOMPARE(MediaCsv::rowLine(current), expectedCsv);
-	QCOMPARE(model.index(0, int(MediaTableModel::Column::ClipName)).data().toString(), QStringLiteral("Prepared clip label"));
-	QCOMPARE(current.originalBin, QStringLiteral("MDB bin"));
-	QVERIFY(current.operationScanReceipt);
-	QVERIFY(operationItemFromMediaFile(current).headerIdentity);
-	QCOMPARE(changed.size(), 0);
 }
 
 QTEST_GUILESS_MAIN(TestMediaTableModel)

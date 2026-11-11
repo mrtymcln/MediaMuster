@@ -61,7 +61,7 @@ namespace
 	{
 		QByteArray encoded = number(quint16(handles.size()), writer.metadataBig);
 		for (const auto handle : handles)
-			encoded += writer.reference(handle, 1);
+			encoded += writer.reference(handle);
 		replace(writer, 1, "OMFI:ObjectSpine", encoded);
 	}
 
@@ -79,10 +79,10 @@ namespace
 		writer.add(handle, "OMFI:MOBJ:MobID", "omfi:UID", uid(identity, writer.metadataBig));
 		writer.add(handle, "OMFI:MOBJ:UsageCode", "omfi:UsageCodeType", number<quint32>(7, writer.metadataBig), true);
 		writer.add(handle, "OMFI:CPNT:Name", "omfi:String", name + '\0');
-		writer.referenceArray(handle, "OMFI:TRKG:Tracks", {track}, 1);
+		writer.referenceArray(handle, "OMFI:TRKG:Tracks", {track});
 		object(writer, track, "TRAK");
 		writer.add(track, "OMFI:TRAK:LabelNumber", "omfi:Short", number<qint16>(1, writer.metadataBig), true);
-		writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(clip, 1));
+		writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(clip));
 		object(writer, clip, "SCLP");
 		writer.add(clip, "OMFI:SCLP:SourceID", "omfi:UID", uid(target, writer.metadataBig));
 	}
@@ -90,7 +90,7 @@ namespace
 	void componentTrack(TypedBento &writer, quint32 track, quint32 component)
 	{
 		object(writer, track, "TRAK");
-		writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(component, 1));
+		writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(component));
 	}
 
 	void sourceComponent(TypedBento &writer, quint32 component, quint32 target = 11, qint16 kind = 1)
@@ -104,12 +104,12 @@ namespace
 	{
 		TypedBento writer;
 		writer.metadataBig = big;
-		writer.head(1);
-		writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301}, 1);
+		writer.head();
+		writer.referenceArray(1, "OMFI:ObjectSpine", {101, 301});
 		object(writer, 101, "MOBJ");
 		writer.add(101, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<quint16>(0, big), true);
 		writer.add(101, "OMFI:MOBJ:MobID", "omfi:UID", uid(11, big));
-		writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201, 1));
+		writer.add(101, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(201));
 		rate(writer, 101, "OMFI:CPNT:EditRate", 25, 1);
 		object(writer, 201, "CDCI");
 		rate(writer, 201, "OMFI:MDFL:SampleRate", 25, 1);
@@ -147,7 +147,7 @@ namespace
 	{
 		object(writer, firstHandle, "ATTR");
 		if (owner)
-			writer.add(owner, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(firstHandle, 1));
+			writer.add(owner, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(firstHandle));
 		QVector<quint32> entries;
 		for (qsizetype index = 0; index < values.size(); ++index)
 		{
@@ -160,7 +160,7 @@ namespace
 			if (value.kind == 1)
 				writer.add(handle, "OMFI:ATTB:IntAttribute", "omfi:Long", number(value.integer, writer.metadataBig), true);
 			else if (value.kind == 3)
-				writer.add(handle, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(value.target, 1));
+				writer.add(handle, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(value.target));
 			else if (value.kind == 4)
 			{
 				const auto encoded = value.text + '\0';
@@ -170,7 +170,7 @@ namespace
 			else
 				writer.add(handle, "OMFI:ATTB:StringAttribute", "omfi:String", value.text + '\0');
 		}
-		writer.referenceArray(firstHandle, "OMFI:ATTR:AttrRefs", entries, 1);
+		writer.referenceArray(firstHandle, "OMFI:ATTR:AttrRefs", entries);
 	}
 
 	void source(TypedBento &writer, quint32 handle, quint32 serial, const QVector<Attribute> &projects)
@@ -190,11 +190,11 @@ namespace
 			const quint32 clip = track + 1;
 			tracks.append(track);
 			object(writer, track, "TRAK");
-			writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(clip, 1));
+			writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(clip));
 			object(writer, clip, "SCLP");
 			writer.add(clip, "OMFI:SCLP:SourceID", "omfi:UID", uid(serials[index], writer.metadataBig));
 		}
-		writer.referenceArray(101, "OMFI:TRKG:Tracks", tracks, 1);
+		writer.referenceArray(101, "OMFI:TRKG:Tracks", tracks);
 	}
 
 	QByteArray codingWire(const QByteArray &label, bool big)
@@ -317,7 +317,7 @@ namespace
 		else if (variation == 2)
 		{
 			object(writer, 18000, "ATTR");
-			writer.add(301, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(18000, 1));
+			writer.add(301, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(18000));
 		}
 		else if (variation != 0)
 		{
@@ -326,9 +326,9 @@ namespace
 			writer.add(18100, "OMFI:MCBR:MC:binNameUTF8", "omfi:String", variation == 10 ? QByteArray::fromHex("c32800") : QByteArray("Bin\0", 4));
 			writer.add(18100, "OMFI:MCBR:MC:binName", "omfi:String", QByteArray("Legacy\0", 7));
 			writer.add(501, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
-			replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401, 1) + writer.reference(402, 1));
+			replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401) + writer.reference(402));
 			object(writer, 402, "TRAK");
-			writer.add(402, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(502, 1));
+			writer.add(402, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(502));
 			object(writer, 502, "SCLP");
 			writer.add(502, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
 			writer.add(502, "OMFI:SCLP:SourceID", "omfi:UID", uid(11, big));
@@ -340,7 +340,7 @@ namespace
 		else if (variation == 5)
 		{
 			attributes(writer, 0, 18400, {});
-			writer.add(301, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(18400, 1));
+			writer.add(301, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(18400));
 		}
 		else if (variation == 8)
 			replace(writer, 18002, "OMFI:ATTB:ObjAttribute", QByteArray(3, '\0'));
@@ -364,10 +364,10 @@ namespace
 			writer.add(601, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<quint16>(0, writer.metadataBig), true);
 			rate(writer, 601, "OMFI:CPNT:EditRate", 2997, 100);
 			writer.add(601, "OMFI:MOBJ:MobID", "omfi:UID", uid(33, writer.metadataBig));
-			writer.referenceArray(101, "OMFI:TRKG:Tracks", {611}, 1);
+			writer.referenceArray(101, "OMFI:TRKG:Tracks", {611});
 			object(writer, 611, "TRAK");
 			writer.add(611, "OMFI:TRAK:LabelNumber", "omfi:Short", number<qint16>(1, writer.metadataBig), true);
-			writer.add(611, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(612, 1));
+			writer.add(611, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(612));
 			object(writer, 612, "SCLP");
 			writer.add(612, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<quint16>(1, writer.metadataBig), true);
 			rate(writer, 612, "OMFI:CPNT:EditRate", 2997, 100);
@@ -376,12 +376,12 @@ namespace
 			writer.add(612, "OMFI:SCLP:SourceTrack", "omfi:Short", number<qint16>(1, writer.metadataBig), true);
 			writer.add(612, "OMFI:SCLP:SourcePosition", "omfi:Long", number<qint32>(0, writer.metadataBig), true);
 		}
-		writer.referenceArray(owner, "OMFI:TRKG:Tracks", {621, 623}, 1);
+		writer.referenceArray(owner, "OMFI:TRKG:Tracks", {621, 623});
 		for (const quint32 track : {621u, 623u})
 		{
 			object(writer, track, "TRAK");
 			writer.add(track, "OMFI:TRAK:LabelNumber", "omfi:Short", number<qint16>(1, writer.metadataBig), true);
-			writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(track + 1, 1));
+			writer.add(track, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(track + 1));
 			object(writer, track + 1, track == 621 ? "FILL" : "TCCP");
 			writer.add(track + 1, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<quint16>(track == 621 ? 1 : 3, writer.metadataBig), true);
 			rate(writer, track + 1, "OMFI:CPNT:EditRate", 2997, 100);
@@ -516,8 +516,8 @@ void TestBellaMdb::missingSource()
 void TestBellaMdb::emptyCatalogue()
 {
 	TypedBento writer;
-	writer.head(1);
-	writer.referenceArray(1, "OMFI:ObjectSpine", {}, 1);
+	writer.head();
+	writer.referenceArray(1, "OMFI:ObjectSpine", {});
 	const auto report = parse(writer);
 	QCOMPARE(report.reading, Bella::MdbReadResult::Completed);
 	QCOMPARE(report.sizeDateCheck, Bella::MdbCheckResult::Verified);
@@ -529,8 +529,8 @@ void TestBellaMdb::emptyCatalogue()
 void TestBellaMdb::referenceArrayExtentAcceptsCountMarker()
 {
 	auto writer = video();
-	replace(writer, 1, "OMFI:ObjectSpine", number<quint16>(0xffff) + writer.reference(101, 1) + writer.reference(301, 1));
-	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(0xffff) + writer.reference(401, 1));
+	replace(writer, 1, "OMFI:ObjectSpine", number<quint16>(0xffff) + writer.reference(101) + writer.reference(301));
+	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(0xffff) + writer.reference(401));
 	const auto report = parse(writer);
 	QCOMPARE(report.reading, Bella::MdbReadResult::Completed);
 	QCOMPARE(report.catalogue.files.size(), 1);
@@ -550,15 +550,20 @@ void TestBellaMdb::unsupportedLayouts_data()
 void TestBellaMdb::unsupportedLayouts()
 {
 	QFETCH(int, variation);
-	TypedBento writer;
-	writer.major = variation == 0 ? 2 : 1;
-	writer.head(variation == 0 ? 1 : 2);
-	writer.referenceArray(1, variation == 0 ? "OMFI:ObjectSpine" : "OMFI:HEAD:Mobs", {}, variation == 0 ? 1 : 2);
-	const auto report = parse(writer);
+	QByteArray capture;
+	if (variation == 0)
+		capture = TestMediaEngineBento::withBento2Version(video().build());
+	else
+	{
+		TypedBento writer;
+		writer.add(1, "OMFI:OOBJ:ObjClass", "omfi:ObjectTag", "HEAD", true);
+		capture = writer.build();
+	}
+	const auto report = parse(capture);
 	QCOMPARE(report.reading, Bella::MdbReadResult::Unsupported);
 	QVERIFY(report.catalogue.files.isEmpty());
 	QVERIFY(report.catalogue.masters.isEmpty());
-	QVERIFY(!report.problemNotes.isEmpty());
+	QVERIFY(report.problemNotes.join('\n').contains(variation == 0 ? QStringLiteral("Bento 1.0") : QStringLiteral("OMF 2 object-class")));
 }
 
 void TestBellaMdb::damagedSharedFoundation_data()
@@ -891,7 +896,7 @@ void TestBellaMdb::duplicateOwnersRemainSeparate()
 	members(writer, {101, 102, 301});
 	object(writer, 102, "MOBJ");
 	writer.add(102, "OMFI:MOBJ:MobID", "omfi:UID", uid(11));
-	writer.add(102, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(202, 1));
+	writer.add(102, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(202));
 	object(writer, 202, "CDCI");
 	rate(writer, 202, "OMFI:MDFL:SampleRate", 24, 1);
 	writer.add(202, "OMFI:MDFL:Length", "omfi:Long", number<qint32>(500), true);
@@ -995,13 +1000,13 @@ void TestBellaMdb::relationshipClassQualification()
 	{
 		replace(writer, 501, "OMFI:SCLP:SourceID", QByteArray(12, '\0'));
 		sourceComponent(writer, 601);
-		writer.referenceArray(301, variation == 4 ? "OMFI:SEQU:Sequence" : "OMFI:NEST:Slots", {601}, 1);
+		writer.referenceArray(301, variation == 4 ? "OMFI:SEQU:Sequence" : "OMFI:NEST:Slots", {601});
 	}
 	else if (variation == 6)
 	{
 		replace(writer, 501, "OMFI:ObjID", "FILL");
 		sourceComponent(writer, 601);
-		writer.add(501, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(601, 1));
+		writer.add(501, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(601));
 	}
 	else if (variation == 7 || variation == 8)
 	{
@@ -1010,7 +1015,7 @@ void TestBellaMdb::relationshipClassQualification()
 		if (variation == 7)
 		{
 			sourceComponent(writer, 702, 33);
-			writer.referenceArray(101, "OMFI:SEQU:Sequence", {702}, 1);
+			writer.referenceArray(101, "OMFI:SEQU:Sequence", {702});
 		}
 		else
 			immediateSources(writer, {33});
@@ -1020,7 +1025,7 @@ void TestBellaMdb::relationshipClassQualification()
 		replace(writer, 501, "OMFI:ObjID", "SEQU");
 		if (variation == 9)
 			sourceComponent(writer, 601);
-		writer.referenceArray(501, "OMFI:SEQU:Sequence", {variation == 9 ? 601u : 501u}, 1);
+		writer.referenceArray(501, "OMFI:SEQU:Sequence", {variation == 9 ? 601u : 501u});
 	}
 	else if (variation == 11)
 	{
@@ -1032,7 +1037,7 @@ void TestBellaMdb::relationshipClassQualification()
 	{
 		replace(writer, 501, "OMFI:ObjID", variation == 12 ? "RSET" : variation == 13 ? "PVOL"
 																					  : "SLCT");
-		writer.referenceArray(501, "OMFI:TRKG:Tracks", {402}, 1);
+		writer.referenceArray(501, "OMFI:TRKG:Tracks", {402});
 		componentTrack(writer, 402, 502);
 		sourceComponent(writer, 502);
 	}
@@ -1081,12 +1086,12 @@ void TestBellaMdb::nullAttributeSlotsAreIncomplete()
 	auto writer = lengthFixture(big);
 	replace(writer, 301, "OMFI:MOBJ:UsageCode", number<quint32>(1, big));
 	writer.add(501, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
-	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401, 1) + writer.reference(402, 1));
+	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401) + writer.reference(402));
 	componentTrack(writer, 402, 502);
 	sourceComponent(writer, 502);
 	if (variation == 3)
 	{
-		replace(writer, 17000, "OMFI:ATTR:AttrRefs", number<quint16>(2, big) + writer.reference(17001, 1) + writer.reference(0, 1));
+		replace(writer, 17000, "OMFI:ATTR:AttrRefs", number<quint16>(2, big) + writer.reference(17001) + writer.reference(0));
 		source(writer, 701, 33, {{"_PJ", "Must not replace damaged own Project"}});
 		members(writer, {101, 301, 701});
 		immediateSources(writer, {33});
@@ -1105,8 +1110,8 @@ void TestBellaMdb::nullAttributeSlotsAreIncomplete()
 		}
 		QByteArray entries = number<quint16>(quint16(variation + 1), big);
 		for (int index = 0; index < variation; ++index)
-			entries += writer.reference(18001 + quint32(index), 1);
-		entries += writer.reference(0, 1);
+			entries += writer.reference(18001 + quint32(index));
+		entries += writer.reference(0);
 		replace(writer, 18000, "OMFI:ATTR:AttrRefs", entries);
 	}
 	const auto withoutDetails = parse(writer, false);
@@ -1160,7 +1165,7 @@ void TestBellaMdb::categoryTrackQualification()
 	// The object attribute is present even with this null payload.
 	attributes(writer, 301, 18000, {{"_IMPORTSETTING", {}, 3, 0}});
 	writer.add(501, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
-	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(variation == 4 ? 3 : 2, big) + writer.reference(401, 1) + writer.reference(402, 1) + (variation == 4 ? writer.reference(403, 1) : QByteArray{}));
+	replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(variation == 4 ? 3 : 2, big) + writer.reference(401) + writer.reference(402) + (variation == 4 ? writer.reference(403) : QByteArray{}));
 	componentTrack(writer, 402, 502);
 	sourceComponent(writer, 502);
 	if (variation == 0)
@@ -1170,7 +1175,7 @@ void TestBellaMdb::categoryTrackQualification()
 	else if (variation == 3)
 	{
 		replace(writer, 501, "OMFI:ObjID", "SEQU");
-		writer.referenceArray(501, "OMFI:SEQU:Sequence", {601, 602}, 1);
+		writer.referenceArray(501, "OMFI:SEQU:Sequence", {601, 602});
 		sourceComponent(writer, 601);
 		sourceComponent(writer, 602);
 		replace(writer, 502, "OMFI:CPNT:TrackKind", number<qint16>(2, big));
@@ -1473,7 +1478,7 @@ void TestBellaMdb::unreadableProjectListKeepsProblems()
 	if (listIssue == 2)
 	{
 		attributes(writer, 0, 18000, {});
-		writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(18000, 1));
+		writer.add(101, "OMFI:CPNT:Attributes", "omfi:ObjRef", writer.reference(18000));
 	}
 	else
 		replace(writer, listIssue == 0 ? 17000 : 17001, "OMFI:ObjID", QByteArray("MOBJ"));
@@ -1579,7 +1584,7 @@ void TestBellaMdb::originalBinConflictBoundary()
 						   QByteArray(variation == 12 ? "Different" : "Unicode") + '\0');
 			}
 			if (variation == 13)
-				writer.add(18001, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(reverse ? 18100 : 18200, 1));
+				writer.add(18001, "OMFI:ATTB:ObjAttribute", "omfi:ObjRef", writer.reference(reverse ? 18100 : 18200));
 			QString expected = QStringLiteral("Unicode");
 			QStringList notes;
 			if (variation == 0 || variation == 1 || variation == 14)
@@ -2210,9 +2215,9 @@ void TestBellaMdb::precomputeImportKindBoundary()
 				writer.add(501, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(variation == 15 ? 2 : 1, big), true);
 				if (variation != 14 && variation != 15 && variation != 16)
 				{
-					replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401, 1) + writer.reference(402, 1));
+					replace(writer, 301, "OMFI:TRKG:Tracks", number<quint16>(2, big) + writer.reference(401) + writer.reference(402));
 					object(writer, 402, "TRAK");
-					writer.add(402, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(502, 1));
+					writer.add(402, "OMFI:TRAK:TrackComponent", "omfi:ObjRef", writer.reference(502));
 					object(writer, 502, "SCLP");
 					writer.add(502, "OMFI:CPNT:TrackKind", "omfi:TrackType", number<qint16>(1, big), true);
 					writer.add(502, "OMFI:SCLP:SourceID", "omfi:UID", uid(11, big));

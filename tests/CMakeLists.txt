@@ -31,6 +31,11 @@ set(_file_verification_sources
     "${_scanner_source_dir}/audio_format_decoder_p.cpp"
     "${_scanner_source_dir}/mob_id.cpp"
 )
+set(_avb_bin_loader_sources
+    "${_app_source_dir}/avb/avb_bin_loader.cpp"
+    "${_app_source_dir}/support/diagnostics.cpp"
+    ${_bin_reader_sources}
+)
 
 # Core
 
@@ -88,11 +93,12 @@ mediamuster_add_test(tst_compression_names media ${_compression_name_sources})
 
 mediamuster_add_test(tst_omf_uid media)
 
-mediamuster_add_test(tst_avb_bin_loader media
-    ${CMAKE_SOURCE_DIR}/src/avb/avb_bin_loader.cpp
-    ${CMAKE_SOURCE_DIR}/src/support/diagnostics.cpp
-    ${_bin_reader_sources}
-)
+mediamuster_add_test(tst_avb_bin_loader media ${_avb_bin_loader_sources})
+
+if(MEDIAMUSTER_BUILD_STRESS_TESTS)
+    mediamuster_add_test(tst_avb_inventory_stress stress ${_avb_bin_loader_sources})
+    set_tests_properties(tst_avb_inventory_stress PROPERTIES RUN_SERIAL TRUE)
+endif()
 
 mediamuster_add_test(tst_effect_catalogue media "${_app_source_dir}/scanner_lookup/effect_catalogue.cpp")
 
@@ -165,6 +171,7 @@ mediamuster_add_test(tst_media_table_model ui
     ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
     ${CMAKE_SOURCE_DIR}/src/media/media_csv.cpp
+    ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
     "${_scanner_source_dir}/mob_id.cpp"
     ${_timing_sources}
 )
@@ -184,11 +191,9 @@ target_link_libraries(tst_precompute_filter_dialog PRIVATE Qt6::Widgets)
 
 mediamuster_add_test(tst_avb_filter_dialog ui
     ${CMAKE_SOURCE_DIR}/src/ui/dialogs/avb_filter_dialog.cpp
-    ${CMAKE_SOURCE_DIR}/src/avb/avb_bin_loader.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/media_filter_proxy.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
-    ${CMAKE_SOURCE_DIR}/src/support/diagnostics.cpp
-    ${_bin_reader_sources}
+    ${_avb_bin_loader_sources}
 )
 target_link_libraries(tst_avb_filter_dialog PRIVATE Qt6::Widgets Qt6::Concurrent)
 set_tests_properties(tst_avb_filter_dialog PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
@@ -218,9 +223,6 @@ mediamuster_add_test(tst_bella_presentation ui
 # Model transfer receipts use the same native volume identity as operations.
 foreach(_model_test tst_media_table_model tst_media_filter_proxy tst_precompute_filter_dialog tst_avb_filter_dialog)
     target_sources(${_model_test} PRIVATE
-        ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
         ${CMAKE_SOURCE_DIR}/src/storage/volume_identity.cpp
-        ${CMAKE_SOURCE_DIR}/src/storage/file_sync.cpp
-        ${_media_label_sources}
     )
 endforeach()

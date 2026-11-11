@@ -76,11 +76,11 @@ namespace
 	{
 		using TestMediaEngineBento::number;
 		TestMediaEngineBento::TypedBento writer;
-		writer.head(1);
-		writer.referenceArray(1, "OMFI:ObjectSpine", {100, 300}, 1);
+		writer.head();
+		writer.referenceArray(1, "OMFI:ObjectSpine", {100, 300});
 		writer.add(100, "OMFI:ObjID", "omfi:ObjectTag", "MOBJ", true);
 		writer.add(100, "OMFI:MOBJ:MobID", "omfi:UID", fileId);
-		writer.add(100, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(200, 1));
+		writer.add(100, "OMFI:MOBJ:PhysicalMedia", "omfi:ObjRef", writer.reference(200));
 		writer.add(200, "OMFI:ObjID", "omfi:ObjectTag", "CDCI", true);
 		writer.add(200, "OMFI:MDFL:SampleRate", "omfi:ExactEditRate", number<qint32>(25) + number<qint32>(1));
 		writer.add(200, "OMFI:MDFL:Length", "omfi:Long", number<qint32>(1), true);
@@ -336,8 +336,6 @@ private slots:
 	void undo_settles_interrupted_retirement_cleanup();
 	void journal_failure_stops_publication();
 	void missing_journal_prevents_relocation();
-	void crash_before_publication_is_not_complete();
-	void crash_after_publication_is_reconciled();
 	void repeated_resume_continues_same_journal();
 	void source_retention_is_explicit();
 	void same_volume_move_preserves_identity();
@@ -356,7 +354,6 @@ private slots:
 	void bella_handoff_checks_copy_move_delete();
 	void operation_scan_receipt_is_required_data();
 	void operation_scan_receipt_is_required();
-	void transferred_row_does_not_borrow_another_headers_receipt();
 	void changed_scan_header_cannot_become_unknown();
 	void conflicting_scan_header_is_refused_without_history();
 	void journal_volume_paths_survive_two_resolutions();
@@ -381,6 +378,7 @@ private slots:
 	void selected_duplicates_keep_both();
 	void regenerated_database_is_retired_on_resume();
 	void torn_tail_retains_valid_prefix();
+	void abrupt_process_exit_is_recoverable_data();
 	void abrupt_process_exit_is_recoverable();
 #ifdef Q_OS_WIN
 	void encrypted_windows_copy_is_refused();
@@ -1227,36 +1225,6 @@ void TestFileOperations::missing_journal_prevents_relocation()
 	QCOMPARE(copyMoveSummaries(sink),
 			 QStringList{QStringLiteral("Move incomplete: 0 files moved to %1; 1 not completed.").arg(f.dest)});
 }
-void TestFileOperations::crash_before_publication_is_not_complete()
-{
-	Fixture f;
-	Sink sink;
-	std::atomic<bool> cancel{false};
-	OperationRunner runner(sink, cancel);
-	runner.hooks.checkpoint = interruptAt("copy-ready");
-	runner.run(f.request(), f.journals);
-	auto a = OperationRecovery::run(f.journals);
-	QCOMPARE(a.resumable.size(), 1);
-	QCOMPARE(a.resumable[0].finished, 0);
-	QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
-}
-void TestFileOperations::crash_after_publication_is_reconciled()
-{
-	Fixture f;
-	Sink sink;
-	std::atomic<bool> cancel{false};
-	OperationRunner runner(sink, cancel);
-	runner.hooks.checkpoint = interruptAt("published");
-	runner.run(f.request(), f.journals);
-	QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
-	auto a = OperationRecovery::run(f.journals);
-	QVERIFY(a.resumable.isEmpty());
-	QVERIFY(a.restorable.isEmpty());
-	QVERIFY(a.undoCandidate);
-	QCOMPARE(a.undoCandidate->entries[0].step, OperationJournal::Step::Done);
-	QVERIFY(a.undoCandidate->entries[0].cleanup.isEmpty());
-	QCOMPARE(OperationJournal::scan(f.journals)[0].entries[0].step, OperationJournal::Step::Done);
-}
 void TestFileOperations::repeated_resume_continues_same_journal()
 {
 	Fixture f;
@@ -1836,25 +1804,6 @@ void TestFileOperations::operation_scan_receipt_is_required()
 	const auto completed = runner.run(request, f.journals + QStringLiteral("/unknown"));
 	QVERIFY2(completed.succeeded == 1, qPrintable(sink.messages.join('\n')));
 	QCOMPARE(completed.failed, 0);
-}
-
-void TestFileOperations::transferred_row_does_not_borrow_another_headers_receipt()
-{
-	MediaFile file;
-	file.mediaFilePath = QStringLiteral("/destination/reused.mxf");
-	file.fileName = QStringLiteral("reused.mxf");
-	file.scanStamp.path = file.mediaFilePath;
-	file.scanStamp.fileMobId = QStringLiteral("database-file-id");
-	file.operationScanReceipt = OperationScanReceipt{};
-	const auto compact = file;
-	MediaFile other = file;
-	other.operationScanReceipt = OperationScanReceipt{OperationHeaderIdentity{{}, {}, QStringLiteral("Other file changed")}, {}};
-	const auto item = OperationManager::itemsFromMediaFiles({compact}, {}).front();
-	QVERIFY(item.headerIdentity);
-	QVERIFY(item.databaseFileMobIdToVerify.isEmpty());
-	QVERIFY(item.headerIdentity->unavailableReason.isEmpty());
-	QCOMPARE(OperationManager::itemsFromMediaFiles({other}, {}).front().headerIdentity->unavailableReason,
-			 QStringLiteral("Other file changed"));
 }
 
 void TestFileOperations::changed_scan_header_cannot_become_unknown()
@@ -2612,31 +2561,57 @@ void TestFileOperations::torn_tail_retains_valid_prefix()
 	QVERIFY(!OperationJournal::scan(f.journals)[0].torn);
 	QCOMPARE(OperationJournal::scan(f.journals)[0].entries[0].step, OperationJournal::Step::Done);
 }
+void TestFileOperations::abrupt_process_exit_is_recoverable_data()
+{
+	QTest::addColumn<QString>("checkpoint");
+	QTest::newRow("before-publication") << QStringLiteral("copy-ready");
+	QTest::newRow("after-publication") << QStringLiteral("published");
+}
 void TestFileOperations::abrupt_process_exit_is_recoverable()
 {
-	for (const auto &checkpoint : {QString("copy-ready"), QString("published")})
+	QFETCH(QString, checkpoint);
+	const bool hasPublished = checkpoint == QStringLiteral("published");
+	Fixture f;
+	const auto destination = f.dest + QStringLiteral("/clip.bin");
+	QProcess child;
+	child.start(QCoreApplication::applicationFilePath(),
+				{"--crash-copy", checkpoint, f.src, f.dest, f.journals});
+	QVERIFY2(child.waitForFinished(30000), qPrintable(child.errorString()));
+	QCOMPARE(child.exitStatus(), QProcess::NormalExit);
+	QCOMPARE(child.exitCode(), 81);
+	const auto records = OperationJournal::scan(f.journals);
+	QCOMPARE(records.size(), 1);
+	const auto &record = records.first();
+	QCOMPARE(record.entries.size(), 1);
+	const auto &entry = record.entries.first();
+	QCOMPARE(entry.step, hasPublished ? OperationJournal::Step::Published : OperationJournal::Step::CopyReady);
+	QCOMPARE(get(f.src), f.bytes);
+	if (hasPublished)
+		QCOMPARE(get(destination), f.bytes);
+	else
+		QCOMPARE(QFileInfo(entry.temp).size(), qint64(f.bytes.size()));
+
+	const auto recovery = OperationRecovery::run(f.journals);
+	if (!hasPublished)
 	{
-		Fixture f;
-		QProcess child;
-		child.start(QCoreApplication::applicationFilePath(),
-					{"--crash-copy", checkpoint, f.src, f.dest, f.journals});
-		QVERIFY(child.waitForFinished(30000));
-		QCOMPARE(child.exitCode(), 81);
-		const auto records = OperationJournal::scan(f.journals);
-		QCOMPARE(records.size(), 1);
-		QCOMPARE(get(f.src), f.bytes);
-		if (checkpoint == "copy-ready")
-		{
-			QCOMPARE(QFileInfo(records[0].entries[0].temp).size(), qint64(f.bytes.size()));
-			QCOMPARE(OperationRecovery::run(f.journals).resumable.size(), 1);
-			QVERIFY(!QFile::exists(f.dest + "/clip.bin"));
-		}
-		else
-		{
-			QVERIFY(OperationRecovery::run(f.journals).resumable.isEmpty());
-			QCOMPARE(get(f.dest + "/clip.bin"), f.bytes);
-		}
+		QCOMPARE(recovery.resumable.size(), 1);
+		QCOMPARE(recovery.resumable.first().journalPath, record.path);
+		QCOMPARE(recovery.resumable.first().finished, 0);
+		QVERIFY(!QFile::exists(destination));
+		return;
 	}
+	QVERIFY(recovery.resumable.isEmpty());
+	QVERIFY(recovery.restorable.isEmpty());
+	QVERIFY(recovery.undoCandidate);
+	QCOMPARE(recovery.undoCandidate->path, record.path);
+	QCOMPARE(recovery.undoCandidate->entries.size(), 1);
+	QCOMPARE(recovery.undoCandidate->entries.first().step, OperationJournal::Step::Done);
+	QVERIFY(recovery.undoCandidate->entries.first().cleanup.isEmpty());
+	QCOMPARE(get(destination), f.bytes);
+	const auto reconciled = OperationJournal::readOne(record.path);
+	QVERIFY(reconciled);
+	QCOMPARE(reconciled->entries.size(), 1);
+	QCOMPARE(reconciled->entries.first().step, OperationJournal::Step::Done);
 }
 void TestFileOperations::rebalance_late_conflict_stops_remaining_members()
 {

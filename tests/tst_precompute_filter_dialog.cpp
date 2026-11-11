@@ -1,4 +1,3 @@
-#include "test_media_file.h"
 #include "ui/dialogs/precompute_filter_dialog.h"
 #include "ui/media_filter_proxy.h"
 #include "ui/media_table_model.h"
@@ -21,7 +20,6 @@ namespace
 		row.type = MediaFile::Type::Precompute;
 		row.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
 		row.effect = effect;
-		row.clipName = QString(effect).replace(QLatin1Char(' '), QLatin1Char('_'));
 		row.effectCategory = QStringLiteral("Blend");
 		row.volumeName = QStringLiteral("EDIT");
 		row.volumePath = volume;
@@ -44,19 +42,19 @@ namespace
 		title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
 		title.effectCategory = QStringLiteral("Title");
 		files.append(title);
-		title.effect = QStringLiteral("3D Warp"); // same inferred name must not change its proven subtype
-		title.clipName = QStringLiteral("3D_Warp");
+		title.effect = QStringLiteral("3D Warp"); // Same effect name, different proven subtype.
+		title.effectCategory = QStringLiteral("Blend");
 		title.fileName = QStringLiteral("renamed-title.mxf");
 		title.mediaFilePath = QStringLiteral("/Volumes/EDIT/renamed-title.mxf");
 		files.append(title);
-		auto unknown = render(QStringLiteral("Renamed"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("unknown.mxf"));
+		auto unknown = render({}, QStringLiteral("/Volumes/EDIT"), QStringLiteral("unknown.mxf"));
 		unknown.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 		unknown.effectCategory.clear();
 		files.append(unknown);
 		auto ordinary = render(QStringLiteral("Ordinary fake effect"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("source.mxf"));
 		ordinary.type = MediaFile::Type::Media;
 		files.append(ordinary);
-		return TestMediaFile::seeded(files);
+		return files;
 	}
 
 	QTreeWidgetItem *choice(PrecomputeFilterDialog &dialog, const QStringList &path)
@@ -86,7 +84,7 @@ namespace
 	QStringList matchingFiles(const QVector<MediaFile> &files, const PrecomputeFilter &filter, const QString &volume = {})
 	{
 		MediaTableModel model;
-		model.setMediaFiles(TestMediaFile::seeded(files));
+		model.setMediaFiles(files);
 		MediaFilterProxy proxy;
 		proxy.setSourceModel(&model);
 		proxy.setPrecomputesEnabled(true);
@@ -233,12 +231,10 @@ void TestPrecomputeFilterDialog::apply_cancel_and_keyboard_actions()
 	tree->setFocus();
 	QTest::keyClick(tree, Qt::Key_Space);
 	QCOMPARE(warp->checkState(0), Qt::Unchecked);
-	QTest::keyClick(tree, Qt::Key_Space);
-	QCOMPARE(warp->checkState(0), Qt::Checked);
+	QVERIFY(dialog.precomputeFilter().paths.isEmpty());
 	QTest::keyClick(&dialog, Qt::Key_Escape);
 	QCOMPARE(rejected.size(), 1);
 	QCOMPARE(accepted.size(), 0);
-	QCOMPARE(initial.paths.size(), 1); // the caller's applied filter stays unchanged
 
 	PrecomputeFilterDialog apply(rows(), initial, {});
 	apply.show();

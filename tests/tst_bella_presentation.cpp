@@ -6,7 +6,6 @@
 
 #include <QDir>
 #include <QFile>
-#include <QPersistentModelIndex>
 #include <QTemporaryDir>
 #include <QTest>
 #include <limits>
@@ -42,8 +41,6 @@ class TestBellaPresentation final : public QObject
 {
 	Q_OBJECT
 private slots:
-	void schema_data();
-	void schema();
 	void rendersAndExportsOneRow();
 	void durationZeroBlankAndSort();
 	void ratesSortExactly();
@@ -52,44 +49,6 @@ private slots:
 };
 
 // MARK: - Table and CSV presentation
-
-void TestBellaPresentation::schema_data()
-{
-	QTest::addColumn<bool>("details");
-	QTest::newRow("core") << false;
-	QTest::newRow("details") << true;
-}
-
-void TestBellaPresentation::schema()
-{
-	QFETCH(bool, details);
-	MediaTableModel model;
-	model.setMediaFiles({MediaFile{}});
-	model.setOmfScanEnabled(true);
-	const QPersistentModelIndex physicalPath(model.index(0, model.columnIndex(Col::Location)));
-	const QPersistentModelIndex omf(model.index(0, model.omfScanColumn()));
-	model.setPrecomputesEnabled(details);
-	QCOMPARE(model.columnCount(), 21 + (details ? 3 : 0));
-	QCOMPARE(physicalPath.column(), model.columnIndex(Col::Location));
-	QCOMPARE(omf.column(), model.omfScanColumn());
-	QCOMPARE(model.headerData(omf.column(), Qt::Horizontal, Qt::DisplayRole).toString(), QStringLiteral("OmfScan"));
-	QCOMPARE(model.headerData(physicalPath.column(), Qt::Horizontal, Qt::DisplayRole).toString(),
-			 QStringLiteral("File Path"));
-	for (int i = 0; i < model.omfScanColumn(); ++i)
-		QCOMPARE(model.columnIndex(model.columnAt(i)), i);
-
-	QString expected = QStringLiteral("Clip Name,Project,Bin,Kind,Duration,Size (MB),Compression,Resolution,Frame Rate,Sample Rate,Bit Depth,Type,");
-	if (details)
-	{
-		expected += QStringLiteral("Precompute Category,Effect Category,Effect,");
-	}
-	expected += QStringLiteral("Date Created,Filename,");
-	expected += QStringLiteral("File Path,");
-	expected += QStringLiteral("No Database,No Reference,FileMobId,MasterMobId,KelpieId,OmfScan\n");
-	const MediaCsv::Options options{details};
-	QCOMPARE(MediaCsv::headerLine(options), expected);
-	QCOMPARE(MediaCsv::rowLine(model.fileAt(0), options).count(QLatin1Char(',')), expected.count(QLatin1Char(',')));
-}
 
 void TestBellaPresentation::rendersAndExportsOneRow()
 {

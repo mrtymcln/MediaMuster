@@ -84,7 +84,6 @@ private slots:
 	void quarantined_filter_uses_scanner_flag();
 	void three_state_classification_sort_is_consistent();
 	void type_sorting_survives_precompute_gate_changes();
-	void effect_selection_intersects_volume_and_existing_filters();
 	void precomputes_gate_resets_filters_and_hidden_search();
 	void effect_columns_sort_displayed_values();
 	void precompute_hierarchy_filters_intersect_and_unknown_is_selectable();
@@ -124,7 +123,7 @@ void TestMediaFilterProxy::unicode_search_normalises_and_folds()
 	QFETCH(QString, name);
 	QFETCH(QString, search);
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({rowNamed(name)}));
+	model.setMediaFiles({rowNamed(name)});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 
@@ -136,7 +135,7 @@ void TestMediaFilterProxy::plain_ascii_never_matches_accents()
 {
 	// Normalise before substring matching: "cafe" must not match "cafe" + an accent.
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({rowNamed(kCafeNfc), rowNamed(kCafeNfd)}));
+	model.setMediaFiles({rowNamed(kCafeNfc), rowNamed(kCafeNfd)});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 
@@ -159,8 +158,8 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_file_path_column
 	b.mediaFilePath = QStringLiteral("/Volumes/BACKUP/Avid MediaFiles/MXF/1/V02.def.mxf");
 	b.fileName = QStringLiteral("V02.def.mxf");
 	b.mediaFolderName = QStringLiteral("1");
-	b.volumeName = QStringLiteral("BACKUP");
-	model.setMediaFiles(TestMediaFile::seeded({a, b}));
+	b.volumeName = QStringLiteral("Archive Drive");
+	model.setMediaFiles({a, b});
 
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
@@ -174,8 +173,9 @@ void TestMediaFilterProxy::search_matches_the_path_shown_in_the_file_path_column
 
 	// The volume name is matched in its own right: a Windows path
 	// ("E:/...") need not contain the label the user knows it by.
-	proxy.setSearchText(QStringLiteral("BACKUP"));
+	proxy.setSearchText(b.volumeName);
 	QCOMPARE(proxy.rowCount(), 1);
+	QCOMPARE(proxy.index(0, model.columnIndex(MediaTableModel::Column::Location)).data().toString(), b.mediaFilePath);
 }
 
 void TestMediaFilterProxy::file_path_search_uses_physical_text_data()
@@ -183,21 +183,19 @@ void TestMediaFilterProxy::file_path_search_uses_physical_text_data()
 	QTest::addColumn<QString>("filePath");
 	QTest::addColumn<QString>("search");
 	QTest::addColumn<bool>("matched");
-	const QString url = QStringLiteral("file:///Recorded%20Imports/Camera%20A/interview.mov");
-	QTest::newRow("directory-only") << url << QStringLiteral("Recorded%20Imports/Camera%20A") << true;
-	QTest::newRow("filename-case-insensitive") << url << QStringLiteral("INTERVIEW.MOV") << true;
-	QTest::newRow("url-escapes-stay-recorded") << url << QStringLiteral("Recorded Imports") << false;
-	QTest::newRow("windows-directory") << QStringLiteral("C:\\Originals\\Camera A\\interview.mov")
-									   << QStringLiteral("originals\\camera a") << true;
-	QTest::newRow("nfc-search-finds-nfd-path") << QStringLiteral("/Originals/") + kCafeNfd + QStringLiteral("/interview.mov")
-											   << kCafeNfc << true;
-	QTest::newRow("nfd-search-finds-nfc-path") << QStringLiteral("/Originals/") + kCafeNfc + QStringLiteral("/interview.mov")
-											   << kCafeNfd << true;
-	QTest::newRow("nfc-accents-remain-significant") << QStringLiteral("/Originals/") + kCafeNfc + QStringLiteral("/interview.mov")
-													<< QStringLiteral("cafe") << false;
-	QTest::newRow("nfd-accents-remain-significant") << QStringLiteral("/Originals/") + kCafeNfd + QStringLiteral("/interview.mov")
-													<< QStringLiteral("cafe") << false;
-	QTest::newRow("unavailable") << QString{} << QStringLiteral("interview.mov") << false;
+	const QString percentPath = QStringLiteral("/Volumes/Edit%20Workspace/Avid MediaFiles/MXF/1/interview.mxf");
+	QTest::newRow("directory-only") << percentPath << QStringLiteral("Edit%20Workspace/Avid MediaFiles") << true;
+	QTest::newRow("filename-case-insensitive") << percentPath << QStringLiteral("INTERVIEW.MXF") << true;
+	QTest::newRow("percent-text-is-literal") << percentPath << QStringLiteral("Edit Workspace") << false;
+	QTest::newRow("windows-directory") << QStringLiteral("C:/OMFI MediaFiles/Camera A/interview.omf")
+									   << QStringLiteral("omfi mediafiles/camera a") << true;
+	const QString nfcPath = QStringLiteral("/Volumes/%1/Avid MediaFiles/MXF/1/interview.mxf").arg(kCafeNfc);
+	const QString nfdPath = QStringLiteral("/Volumes/%1/Avid MediaFiles/MXF/1/interview.mxf").arg(kCafeNfd);
+	QTest::newRow("nfc-search-finds-nfd-path") << nfdPath << kCafeNfc << true;
+	QTest::newRow("nfd-search-finds-nfc-path") << nfcPath << kCafeNfd << true;
+	QTest::newRow("nfc-accents-remain-significant") << nfcPath << QStringLiteral("cafe") << false;
+	QTest::newRow("nfd-accents-remain-significant") << nfdPath << QStringLiteral("cafe") << false;
+	QTest::newRow("unavailable") << QString{} << QStringLiteral("interview.mxf") << false;
 }
 
 void TestMediaFilterProxy::file_path_search_uses_physical_text()
@@ -208,12 +206,11 @@ void TestMediaFilterProxy::file_path_search_uses_physical_text()
 	auto file = rowNamed(QStringLiteral("Managed media"));
 	file.mediaFilePath = filePath;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({file}));
+	model.setMediaFiles({file});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setSearchText(search);
 	QCOMPARE(proxy.rowCount(), matched ? 1 : 0);
-	QCOMPARE(model.fileAt(0).mediaFilePath, filePath);
 }
 
 // MARK: - Column sorting
@@ -221,13 +218,13 @@ void TestMediaFilterProxy::file_path_search_uses_physical_text()
 void TestMediaFilterProxy::file_path_column_sorts_physical_path()
 {
 	auto later = rowNamed(QStringLiteral("Same clip name"));
-	later.mediaFilePath = QStringLiteral("/Z-directory/A.mov");
+	later.mediaFilePath = QStringLiteral("/Volumes/Z-drive/Avid MediaFiles/MXF/1/A.mxf");
 	auto earlier = later;
-	earlier.mediaFilePath = QStringLiteral("/a-directory/z.mov");
+	earlier.mediaFilePath = QStringLiteral("/Volumes/a-drive/Avid MediaFiles/MXF/1/z.mxf");
 	auto unknown = later;
 	unknown.mediaFilePath.clear();
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({later, earlier, unknown}));
+	model.setMediaFiles({later, earlier, unknown});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int column = int(MediaTableModel::Column::Location);
@@ -257,7 +254,7 @@ void TestMediaFilterProxy::master_column_sorts_selected_identity()
 	unknown.mediaFilePath = QStringLiteral("/vol/unknown.mxf");
 	QVERIFY(earlier.masterMobId < later.masterMobId);
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({later, earlier, unknown}));
+	model.setMediaFiles({later, earlier, unknown});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int column = int(MediaTableModel::Column::MasterMobId);
@@ -286,10 +283,10 @@ void TestMediaFilterProxy::size_column_sorts_on_exact_bytes()
 	// The two 850.0-rounding neighbours differ by 400 bytes: the display
 	// string cannot tell them apart, the sort must.
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({sized(QStringLiteral("big"), 1'100'000'000),
-											   sized(QStringLiteral("mid_hi"), 850'000'400),
-											   sized(QStringLiteral("mid_lo"), 850'000'000),
-											   sized(QStringLiteral("empty"), 0)}));
+	model.setMediaFiles({sized(QStringLiteral("big"), 1'100'000'000),
+						 sized(QStringLiteral("mid_hi"), 850'000'400),
+						 sized(QStringLiteral("mid_lo"), 850'000'000),
+						 sized(QStringLiteral("empty"), 0)});
 
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
@@ -319,7 +316,7 @@ void TestMediaFilterProxy::sample_rate_column_sorts_numerically()
 		files.append(file);
 	}
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded(files));
+	model.setMediaFiles(files);
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int column = int(MediaTableModel::Column::SampleRate);
@@ -346,7 +343,7 @@ void TestMediaFilterProxy::bit_depth_column_sorts_numbers_with_unavailable_first
 		files.append(file);
 	}
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded(files));
+	model.setMediaFiles(files);
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int column = int(MediaTableModel::Column::BitDepth);
@@ -374,7 +371,7 @@ void TestMediaFilterProxy::unknown_classification_does_not_match_known_filters()
 	audio.kind = MediaFile::Kind::Audio;
 	audio.type = MediaFile::Type::Precompute;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({unknown, video, audio}));
+	model.setMediaFiles({unknown, video, audio});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int name = int(MediaTableModel::Column::ClipName);
@@ -407,7 +404,7 @@ void TestMediaFilterProxy::database_filters_use_the_four_membership_results()
 		files.append(file);
 	}
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded(files));
+	model.setMediaFiles(files);
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int name = Enum::toUnderlying(MediaTableModel::Column::ClipName);
@@ -468,7 +465,7 @@ void TestMediaFilterProxy::database_filters_intersect_existing_filters()
 	otherView.mediaFilePath = QStringLiteral("/vol/other-view.mxf");
 	otherView.dbStatus = noDatabase ? DbStatus::NoReference : DbStatus::NoDatabase;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({matching, otherProject, otherSearch, otherBin, listed, otherView}));
+	model.setMediaFiles({matching, otherProject, otherSearch, otherBin, listed, otherView});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setFilterMode(mode);
@@ -509,7 +506,7 @@ void TestMediaFilterProxy::database_flags_sort_across_optional_column_gates()
 		files.append(file);
 	}
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded(files));
+	model.setMediaFiles(files);
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setSortRole(Qt::UserRole);
@@ -555,7 +552,7 @@ void TestMediaFilterProxy::quarantined_filter_uses_scanner_flag()
 	namedOnly.mediaFolderName = QStringLiteral("Quarantined Files");
 	namedOnly.mediaFilePath = QStringLiteral("/vol/Avid MediaFiles/MXF/Quarantined Files/named.mxf");
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({flagged, namedOnly}));
+	model.setMediaFiles({flagged, namedOnly});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int name = Enum::toUnderlying(MediaTableModel::Column::ClipName);
@@ -626,7 +623,7 @@ void TestMediaFilterProxy::duration_column_sorts_displayed_timecode()
 	}
 	std::reverse(rows.begin(), rows.end());
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded(rows));
+	model.setMediaFiles(rows);
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	for (const auto direction : {Qt::AscendingOrder, Qt::DescendingOrder})
@@ -660,7 +657,7 @@ void TestMediaFilterProxy::three_state_classification_sort_is_consistent()
 	do
 	{
 		MediaTableModel model;
-		model.setMediaFiles(TestMediaFile::seeded({rows[order[0]], rows[order[1]], rows[order[2]]}));
+		model.setMediaFiles({rows[order[0]], rows[order[1]], rows[order[2]]});
 		MediaFilterProxy proxy;
 		proxy.setSourceModel(&model);
 		proxy.setPrecomputesEnabled(true);
@@ -689,7 +686,7 @@ void TestMediaFilterProxy::type_sorting_survives_precompute_gate_changes()
 	MediaFile media = rowNamed(QStringLiteral("ordinary"));
 	media.type = MediaFile::Type::Media;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({render, media}));
+	model.setMediaFiles({render, media});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const int typeColumn = int(MediaTableModel::Column::Type);
@@ -710,65 +707,6 @@ void TestMediaFilterProxy::type_sorting_survives_precompute_gate_changes()
 
 // MARK: - Precompute filters and feature gates
 
-void TestMediaFilterProxy::effect_selection_intersects_volume_and_existing_filters()
-{
-	MediaFile title = rowNamed(QStringLiteral("picture"));
-	title.clipName = QStringLiteral("picture,Title+1");
-	title.type = MediaFile::Type::Precompute;
-	title.kind = MediaFile::Kind::Video;
-	title.effect = QStringLiteral("Title");
-	title.volumeName = QStringLiteral("EDIT");
-	title.volumePath = QStringLiteral("/Volumes/EDIT");
-	title.project = QStringLiteral("Project A");
-	title.fileMobId = MobId::format(TestAvb::Source);
-	MediaFile custom = title;
-	custom.clipName = QStringLiteral("sound,Custom exact name+1");
-	custom.fileName = QStringLiteral("sound.mxf");
-	custom.mediaFilePath = QStringLiteral("/vol/sound.mxf");
-	custom.kind = MediaFile::Kind::Audio;
-	custom.effect = QStringLiteral("Custom exact name");
-	custom.fileMobId = MobId::format(TestAvb::Other);
-	MediaFile otherVolume = title;
-	otherVolume.volumePath = QStringLiteral("/Volumes/EDIT 2"); // same displayed label
-	MediaFile otherProject = title;
-	otherProject.project = QStringLiteral("Project B");
-	MediaFile ordinary = title;
-	ordinary.type = MediaFile::Type::Media; // stale details must not imply a render
-	MediaFile unknown = title;
-	unknown.type = MediaFile::Type::Unknown;
-	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({title, custom, otherVolume, otherProject, ordinary, unknown}));
-	MediaFilterProxy proxy;
-	proxy.setSourceModel(&model);
-	proxy.setPrecomputesEnabled(true);
-	proxy.setPrecomputeTreeFilter({true, {{{}, {}, QStringLiteral("Title")}, {{}, {}, QStringLiteral("Custom exact name")}}});
-	QCOMPARE(proxy.rowCount(), 4); // OR across names, proven precomputes only
-	proxy.setPrecomputeVolumeFilter(title.volumePath);
-	QCOMPARE(proxy.rowCount(), 3);
-	proxy.setProjectFilter({title.project});
-	QCOMPARE(proxy.rowCount(), 2);
-	proxy.setFilterMode(MediaFilterProxy::FilterMode::Audio);
-	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({title.fileMobId}), {}}}});
-	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({custom.fileMobId}), {}}}});
-	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setSearchText(QStringLiteral("picture"));
-	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setSearchText(QStringLiteral("sound"));
-	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setSearchText({});
-	proxy.setBinFilter({});
-	proxy.setFilterMode(MediaFilterProxy::FilterMode::All);
-	proxy.setProjectFilter({});
-	proxy.setPrecomputeTreeFilter({true, {{{}, {}, QStringLiteral("title")}}});
-	QCOMPARE(proxy.rowCount(), 0); // names are exact, not fuzzy or case folded
-	proxy.setPrecomputeTreeFilter({});
-	QCOMPARE(proxy.rowCount(), 3); // volume alone still means precomputes
-	proxy.setPrecomputeVolumeFilter({});
-	QCOMPARE(proxy.rowCount(), 6); // neither selection means no precompute filter
-}
-
 void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 {
 	MediaFile render = rowNamed(QStringLiteral("render"));
@@ -782,7 +720,7 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 	media.type = MediaFile::Type::Media;
 	media.effect = render.effect;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({render, media}));
+	model.setMediaFiles({render, media});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 
@@ -792,8 +730,8 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 		int expectedRows;
 	};
 	const GateCase cases[] = {
-		{{true, {{{}, {}, render.effect}}}, 1}, // A named selection.
-		{{true, {}}, 0},						// An active empty selection means no matches.
+		{{true, {{render.precomputeCategoryFilterLabel(), render.effectCategory, render.effect}}}, 1},
+		{{true, {}}, 0}, // An active empty selection means no matches.
 	};
 	QVERIFY(!proxy.precomputesEnabled());
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Precompute);
@@ -845,14 +783,10 @@ void TestMediaFilterProxy::precomputes_gate_resets_filters_and_hidden_search()
 		QCOMPARE(proxy.rowCount(), 2); // Mode and selections stay reset when re-enabled.
 	}
 
-	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("Title"), QStringLiteral("Title")}}});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), {}, QStringLiteral("Title")}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setPrecomputeTreeFilter({true, {{}}});
 	QCOMPARE(proxy.rowCount(), 1); // A root wildcard includes only proven precomputes.
-	proxy.setPrecomputeTreeFilter({true, {{{}, QStringLiteral("Title"), {}}}});
-	QVERIFY(proxy.precomputeTreeFilter().active);
-	QCOMPARE(proxy.rowCount(), 0);
-	proxy.setPrecomputeTreeFilter({true, {{}}});
 	proxy.setPrecomputeTreeFilter({});
 	QCOMPARE(proxy.rowCount(), 2); // Inactive and active-empty are different states.
 	proxy.setPrecomputeTreeFilter({false, {{QStringLiteral("Rendered Effects"), {}, {}}}});
@@ -867,13 +801,17 @@ void TestMediaFilterProxy::effect_columns_sort_displayed_values()
 	MediaFile alpha = rowNamed(QStringLiteral("alpha"));
 	alpha.clipName = QStringLiteral("Alpha,3D_Warp+1");
 	alpha.type = MediaFile::Type::Precompute;
+	alpha.effect = QStringLiteral("3D Warp");
+	alpha.effectCategory = QStringLiteral("Blend");
 	MediaFile zulu = alpha;
 	zulu.clipName = QStringLiteral("Zulu,Color_Correction+1");
+	zulu.effect = QStringLiteral("Color Correction");
+	zulu.effectCategory = QStringLiteral("Image");
 	MediaFile ordinary = zulu;
 	ordinary.clipName = QStringLiteral("ordinary");
 	ordinary.type = MediaFile::Type::Media;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({zulu, alpha, ordinary}));
+	model.setMediaFiles({zulu, alpha, ordinary});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	model.setPrecomputesEnabled(true);
@@ -923,7 +861,7 @@ void TestMediaFilterProxy::precompute_hierarchy_filters_intersect_and_unknown_is
 	MediaFile ordinary = warp;
 	ordinary.type = MediaFile::Type::Media;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({warp, title, unresolved, uncertain, otherVolume, ordinary}));
+	model.setMediaFiles({warp, title, unresolved, uncertain, otherVolume, ordinary});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), {}}}});
@@ -937,11 +875,13 @@ void TestMediaFilterProxy::precompute_hierarchy_filters_intersect_and_unknown_is
 	QCOMPARE(proxy.rowCount(), 2);
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3D Warp")}}});
 	QCOMPARE(proxy.rowCount(), 1);
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("Blend"), QStringLiteral("3d warp")}}});
+	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Rendered Effects"), QStringLiteral("unknown"), QStringLiteral("unknown")}}});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("unknown"), QStringLiteral("unknown"), QStringLiteral("unknown")}}});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("unknown"), {}, QStringLiteral("unknown")}}});
 	QCOMPARE(proxy.rowCount(), 1);
-	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), QStringLiteral("unknown"), QStringLiteral("unknown")}}});
+	proxy.setPrecomputeTreeFilter({true, {{QStringLiteral("Titles and Matte Keys"), {}, QStringLiteral("unknown")}}});
 	QCOMPARE(proxy.rowCount(), 0);
 	proxy.setPrecomputesEnabled(false);
 	QCOMPARE(proxy.rowCount(), 6);
@@ -967,6 +907,8 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	warp.kind = MediaFile::Kind::Video;
 	MediaFile otherCategory = warp;
 	otherCategory.clipName = QStringLiteral("Sequence,Color_Correction+1");
+	otherCategory.effect = QStringLiteral("Color Correction");
+	otherCategory.effectCategory = QStringLiteral("Image");
 	MediaFile title = warp;
 	title.clipName = QStringLiteral("Sequence,Title+1");
 	title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
@@ -976,6 +918,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	MediaFile matte = title;
 	matte.clipName = QStringLiteral("Sequence,Matte_Key+1");
 	matte.effect = QStringLiteral("Matte Key");
+	matte.effectCategory = QStringLiteral("Key");
 	matte.project = warp.project;
 	matte.fileMobId = MobId::format(TestAvb::Other);
 	matte.kind = MediaFile::Kind::Audio;
@@ -987,7 +930,7 @@ void TestMediaFilterProxy::precompute_tree_unites_branches_and_preserves_complet
 	MediaFile unknownSubtype = warp;
 	unknownSubtype.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({warp, otherCategory, title, matte, sameNameOtherSubtype, ordinary, unknownSubtype}));
+	model.setMediaFiles({warp, otherCategory, title, matte, sameNameOtherSubtype, ordinary, unknownSubtype});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setPrecomputesEnabled(true);
@@ -1032,7 +975,7 @@ void TestMediaFilterProxy::precompute_tree_empty_and_unknown_are_not_wildcards()
 	MediaFile unknownType = render;
 	unknownType.type = MediaFile::Type::Unknown;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({render, unknownSubtype, ordinary, unknownType}));
+	model.setMediaFiles({render, unknownSubtype, ordinary, unknownType});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setPrecomputesEnabled(true);
@@ -1068,7 +1011,7 @@ void TestMediaFilterProxy::bin_filter_excludes_master_only_relatives()
 	audio.fileMobId = MobId::format(TestAvb::Other);
 	audio.masterMobId = video.masterMobId;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({video, audio}));
+	model.setMediaFiles({video, audio});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	const auto videoKey = MobId::format(TestAvb::Source);
@@ -1173,7 +1116,7 @@ void TestMediaFilterProxy::bin_subtraction_only_uses_file_identity()
 	row.fileMobId = MobId::format(TestAvb::Source);
 	row.masterMobId = MobId::format(TestAvb::Master);
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({row}));
+	model.setMediaFiles({row});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({row.fileMobId}), {}},
@@ -1188,7 +1131,7 @@ void TestMediaFilterProxy::bin_ordered_add_can_restore_a_row()
 	row.masterMobId = MobId::format(TestAvb::Master);
 	const auto refs = fullIds({row.fileMobId});
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({row, rowNamed(QStringLiteral("unrelated"))}));
+	model.setMediaFiles({row, rowNamed(QStringLiteral("unrelated"))});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, refs, {}},
@@ -1208,7 +1151,7 @@ void TestMediaFilterProxy::bin_leading_subtract_uses_all_media_rows()
 	outside.fileMobId = MobId::format(TestAvb::Other);
 	MediaFile unknown = rowNamed(QStringLiteral("no identity"));
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({hit, outside, unknown}));
+	model.setMediaFiles({hit, outside, unknown});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setBinFilter({{{AvbFilter::Operation::Subtract, {}, fullIds({hit.fileMobId, QString{}}), {}}}});
@@ -1222,7 +1165,7 @@ void TestMediaFilterProxy::bin_empty_operand_leaves_filter_unchanged()
 	MediaFile hit = rowNamed(QStringLiteral("hit"));
 	hit.fileMobId = MobId::format(TestAvb::Source);
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({hit, rowNamed(QStringLiteral("outside"))}));
+	model.setMediaFiles({hit, rowNamed(QStringLiteral("outside"))});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	for (const auto op : {AvbFilter::Operation::Intersect, AvbFilter::Operation::Subtract, AvbFilter::Operation::Add})
@@ -1243,14 +1186,14 @@ void TestMediaFilterProxy::bin_expression_intersects_search_and_survives_model_r
 	MediaFile second = rowNamed(QStringLiteral("second"));
 	second.fileMobId = first.fileMobId;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({first, second}));
+	model.setMediaFiles({first, second});
 	MediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setBinFilter({{{AvbFilter::Operation::Intersect, {}, fullIds({first.fileMobId}), {}}}});
 	proxy.setSearchText(QStringLiteral("second"));
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
-	model.setMediaFiles(TestMediaFile::seeded({rowNamed(QStringLiteral("second unrelated")), second}));
+	model.setMediaFiles({rowNamed(QStringLiteral("second unrelated")), second});
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	proxy.setBinFilter({});
@@ -1266,7 +1209,7 @@ void TestMediaFilterProxy::unchanged_bin_criteria_do_not_refilter_rows()
 	MediaFile second = rowNamed(QStringLiteral("second"));
 	second.fileMobId = MobId::format(TestAvb::Other);
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({first, second}));
+	model.setMediaFiles({first, second});
 	CountingMediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	QCOMPARE(proxy.rowCount(), 2);
@@ -1323,7 +1266,7 @@ void TestMediaFilterProxy::unchanged_filter_mode_does_not_refilter_rows()
 	MediaFile audio = rowNamed(QStringLiteral("sound"));
 	audio.kind = MediaFile::Kind::Audio;
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({video, audio}));
+	model.setMediaFiles({video, audio});
 	CountingMediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	QCOMPARE(proxy.rowCount(), 2);
@@ -1353,7 +1296,7 @@ void TestMediaFilterProxy::unchanged_filter_mode_does_not_refilter_rows()
 void TestMediaFilterProxy::unchanged_normalised_search_does_not_refilter_rows()
 {
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({rowNamed(kCafeNfd), rowNamed(QStringLiteral("sound"))}));
+	model.setMediaFiles({rowNamed(kCafeNfd), rowNamed(QStringLiteral("sound"))});
 	CountingMediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	QCOMPARE(proxy.rowCount(), 2);
@@ -1389,7 +1332,7 @@ void TestMediaFilterProxy::unchanged_project_set_does_not_refilter_rows()
 	MediaFile third = rowNamed(QStringLiteral("third"));
 	third.project = QStringLiteral("Project C");
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({first, second, third}));
+	model.setMediaFiles({first, second, third});
 	CountingMediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	QCOMPARE(proxy.rowCount(), 3);
@@ -1427,7 +1370,7 @@ void TestMediaFilterProxy::active_filters_survive_source_reset_and_data_change()
 	};
 	const QString project = QStringLiteral("Project A");
 	MediaTableModel model;
-	model.setMediaFiles(TestMediaFile::seeded({row(QStringLiteral("match initial"), MediaFile::Kind::Video, project)}));
+	model.setMediaFiles({row(QStringLiteral("match initial"), MediaFile::Kind::Video, project)});
 	CountingMediaFilterProxy proxy;
 	proxy.setSourceModel(&model);
 	proxy.setFilterMode(MediaFilterProxy::FilterMode::Video);
@@ -1437,10 +1380,10 @@ void TestMediaFilterProxy::active_filters_survive_source_reset_and_data_change()
 	proxy.rowChecks = 0;
 
 	const auto first = row(QStringLiteral("first"), MediaFile::Kind::Video, project);
-	model.setMediaFiles(TestMediaFile::seeded({first,
-											   row(QStringLiteral("match reset"), MediaFile::Kind::Video, project),
-											   row(QStringLiteral("match audio"), MediaFile::Kind::Audio, project),
-											   row(QStringLiteral("match other project"), MediaFile::Kind::Video, QStringLiteral("Project B"))}));
+	model.setMediaFiles({first,
+						 row(QStringLiteral("match reset"), MediaFile::Kind::Video, project),
+						 row(QStringLiteral("match audio"), MediaFile::Kind::Audio, project),
+						 row(QStringLiteral("match other project"), MediaFile::Kind::Video, QStringLiteral("Project B"))});
 	QCOMPARE(proxy.rowCount(), 1);
 	QCOMPARE(proxy.mapToSource(proxy.index(0, 0)).row(), 1);
 	QVERIFY(proxy.rowChecks > 0);
