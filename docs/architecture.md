@@ -160,12 +160,11 @@ remain attached to their file routines.
 uses saved physical identities and does not gain an Avid-header requirement.
 Journals and recovery keep their existing schema and captured requirements.
 
-The `mediamuster_binreader` target compiles the independent reader, source-graph
-support and resolver under `src/AvbReader/`. In the same folder,
-[`AvbBinLoader`](../src/AvbReader/avbbinloader.h) prepares app-facing
+The app compiles the bin reader and resolver sources from [`src/avb`](../src/avb/).
+In the same folder, [`AvbBinLoader`](../src/avb/avb_bin_loader.h) prepares app-facing
 bin results. Parsed graphs remain local to loading; loaded bins retain compact
 file references and warnings. Shared compression lookups under
-`src/CompressionNames/` are naming helpers, separate from bin reading.
+[`src/scanner_lookup`](../src/scanner_lookup/) supply names for scanner results.
 
 ## Filters, selection and export
 

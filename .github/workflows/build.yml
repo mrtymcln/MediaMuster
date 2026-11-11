@@ -11,7 +11,7 @@ on:
 permissions:
   contents: read
 
-# Keep versions aligned with CMakeLists.txt.
+# Keep these versions aligned with CMakeLists.
 env:
   APP_VERSION: "0.0.3"
   QT_VERSION: "6.5.3"
@@ -26,14 +26,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-15
             name: MediaMuster-Mac
-            qt-host: mac
-            qt-arch: ''
-          # Pin the image: the Qt compatibility patch targets this MSVC toolchain.
+          # The Qt compatibility patch is used with the Visual Studio 2022 toolchain.
           - os: windows-2022
             name: MediaMuster-Win
-            qt-host: windows
             qt-arch: win64_msvc2019_64
 
     runs-on: ${{ matrix.os }}
@@ -42,31 +39,49 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - name: Check the version
-        run: cmake -P .github/cmake/check-versions.cmake
+      - name: Check release tag
+        if: github.ref_type == 'tag'
+        shell: bash
+        run: test "$GITHUB_REF_NAME" = "v$APP_VERSION"
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v4
         with:
           version: ${{ env.QT_VERSION }}
-          host: ${{ matrix.qt-host }}
-          target: 'desktop'
           arch: ${{ matrix.qt-arch }}
           dir: '${{ runner.temp }}/Qt'
           cache: true
 
-      - name: Patch Qt for modern MSVC (Windows)
+      - name: Patch Qt for MSVC
         if: runner.os == 'Windows'
         run: cmake -P .github/cmake/patch-qt-windows.cmake
 
-      - name: Build (macOS and Windows)
-        run: cmake -P .github/cmake/build.cmake
+      - name: Configure
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            generator_options=(-G "Visual Studio 17 2022" -A x64)
+          else
+            generator_options=(-G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release)
+          fi
+          cmake -S . -B build "${generator_options[@]}" "-DCMAKE_PREFIX_PATH=${QT_ROOT_DIR:?Qt installation path is missing}"
 
-      - name: Test (macOS and Windows)
+      - name: Build
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == Windows ]]; then
+            build_jobs="${NUMBER_OF_PROCESSORS:-1}"
+          else
+            build_jobs="$(sysctl -n hw.ncpu 2>/dev/null || echo 1)"
+          fi
+          cmake --build build --config Release --parallel "$build_jobs"
+
+      - name: Test
+        id: test
         run: cmake -P .github/cmake/test.cmake
 
-      - name: Upload test diagnostics (on failure)
-        if: failure()
+      - name: Upload test diagnostics
+        if: failure() && steps.test.outcome == 'failure'
         uses: actions/upload-artifact@v7
         with:
           name: test-diagnostics-${{ matrix.name }}
@@ -115,7 +130,6 @@ jobs:
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    ### The only job that writes to the Releases page ###
     permissions:
       contents: write
     steps:
@@ -126,7 +140,9 @@ jobs:
 
       - name: Zip the Windows folder
         working-directory: release-assets
-        run: cmake -E tar cf "MediaMuster-${{ env.APP_VERSION }}-Win.zip" --format=zip "MediaMuster-${{ env.APP_VERSION }}-Win"
+        run: |
+          windows_package="MediaMuster-${APP_VERSION}-Win"
+          cmake -E tar cf "${windows_package}.zip" --format=zip "$windows_package"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3

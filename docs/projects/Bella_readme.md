@@ -1,7 +1,7 @@
 # Bella requirements
 
 Bella is the scanner and media-reading engine in macOS and Windows MediaMuster
-builds. It uses C++17 and the pinned Qt 6.5.3.
+builds. It uses C++17 and the [Qt version pinned for MediaMuster](../../CMakeLists.txt).
 
 This page summarises the current approved contract. The
 [implementation map](../../../src/bella/README.md) identifies its files and APIs;
