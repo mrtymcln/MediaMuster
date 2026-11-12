@@ -1,0 +1,79 @@
+name: Windows SHA-256 benchmark
+
+on:
+  push:
+    branches: [codex/windows-sha256-benchmark]
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark:
+    runs-on: windows-2022
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install release Qt toolchain
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.5.3'
+          arch: win64_msvc2019_64
+          dir: '${{ runner.temp }}/Qt'
+          cache: true
+
+      - name: Apply release build Qt header patch
+        run: cmake -P .github/cmake/patch-qt-windows.cmake
+
+      - name: Build benchmark
+        run: |
+          cmake -S .github/benchmarks/sha256 -B build-benchmark -G "Visual Studio 17 2022" -A x64 "-DCMAKE_PREFIX_PATH=$env:QT_ROOT_DIR"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmake --build build-benchmark --config Release --parallel
+
+      - name: Verify release archive and benchmark its Qt DLL
+        run: |
+          $releaseArchive = Join-Path $env:RUNNER_TEMP 'MediaMuster-0.0.3-Win.zip'
+          $releaseDirectory = Join-Path $env:RUNNER_TEMP 'mediamuster-release'
+          $releaseUrl = 'https://github.com/mrtymcln/MediaMuster/releases/download/v0.0.3/MediaMuster-0.0.3-Win.zip'
+          Invoke-WebRequest -Uri $releaseUrl -OutFile $releaseArchive -MaximumRetryCount 3 -RetryIntervalSec 2
+          $archiveHash = (Get-FileHash -LiteralPath $releaseArchive -Algorithm SHA256).Hash
+          if ($archiveHash -ne '3e70bde3da169176c309ffea64507dcb72200a5ee2840350a3ad5b3277c8c0f0') {
+            throw "Published Windows release archive SHA-256 mismatch: $archiveHash"
+          }
+          Expand-Archive -LiteralPath $releaseArchive -DestinationPath $releaseDirectory
+
+          $releaseQtDlls = @(Get-ChildItem -LiteralPath $releaseDirectory -Recurse -File -Filter Qt6Core.dll)
+          if ($releaseQtDlls.Count -ne 1) {
+            throw "Expected one Qt6Core.dll in the release archive, found $($releaseQtDlls.Count)"
+          }
+          $releaseQtDll = $releaseQtDlls[0]
+          $installedQtDll = Join-Path $env:QT_ROOT_DIR 'bin/Qt6Core.dll'
+          $releaseQtHash = (Get-FileHash -LiteralPath $releaseQtDll.FullName -Algorithm SHA256).Hash
+          $installedQtHash = (Get-FileHash -LiteralPath $installedQtDll -Algorithm SHA256).Hash
+          $benchmark = Join-Path $releaseQtDll.DirectoryName 'sha256-benchmark.exe'
+          Copy-Item -LiteralPath 'build-benchmark/Release/sha256-benchmark.exe' -Destination $benchmark
+
+          $cpu = ((Get-CimInstance Win32_Processor).Name | Sort-Object -Unique) -join ', '
+          $system = Get-CimInstance Win32_OperatingSystem
+          $details = @(
+            "CPU: $cpu"
+            "OS: $($system.Caption), build $($system.BuildNumber)"
+            "Runner image: $env:ImageOS $env:ImageVersion"
+            "Release archive SHA-256: $archiveHash"
+            "Shipped Qt6Core.dll SHA-256: $releaseQtHash"
+            "Installed Qt6Core.dll SHA-256: $installedQtHash"
+          )
+          $details | Write-Output
+          $details | ForEach-Object { "- $_" } | Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY
+
+          $benchmarkLog = Join-Path $env:RUNNER_TEMP 'sha256-benchmark.log'
+          & $benchmark 2>&1 | Tee-Object -FilePath $benchmarkLog
+          $benchmarkExitCode = $LASTEXITCODE
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value @(
+            ''
+            '```text'
+            (Get-Content -LiteralPath $benchmarkLog -Raw)
+            '```'
+          )
+          if ($benchmarkExitCode -ne 0) { exit $benchmarkExitCode }
