@@ -253,6 +253,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		entry.metadata.masterMobId = masterMobId;
 		entry.metadata.compression.compressionName = QStringLiteral("DNx HQX");
 		entry.metadata.bitDepth.bits = 10;
+		entry.metadata.interpretedBitDepth = 10;
 		entry.operationSafety = safety;
 		return mediaFileRecordFromScanEntry(entry);
 	};

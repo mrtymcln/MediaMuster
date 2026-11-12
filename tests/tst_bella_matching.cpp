@@ -7,6 +7,7 @@
 #include <numeric>
 
 Q_DECLARE_METATYPE(Bella::LocalReference)
+Q_DECLARE_METATYPE(Bella::MdbDepthRepresentation)
 
 // MARK: - Test helpers
 
@@ -172,6 +173,8 @@ private slots:
 	void exactPmrNames_data();
 	void exactPmrNames();
 	void selectedFieldPriorities();
+	void selectedFixedPointBitDepth_data();
+	void selectedFixedPointBitDepth();
 	void headerNeeded_data();
 	void headerNeeded();
 	void failedHeaderIsNotRequestedAgain_data();
@@ -348,6 +351,7 @@ void TestBellaMatching::selectedFieldPriorities()
 	QVERIFY(!m.sampleRate);
 	QCOMPARE(m.bitDepth.bits, std::optional<quint32>(10));
 	QCOMPARE(m.bitDepth.representation, Bella::MatchDepthRepresentation::Integer);
+	QCOMPARE(m.interpretedBitDepth, std::optional<quint32>(10));
 	QCOMPARE(m.compression.compressionName, QStringLiteral("Apple ProRes 422 HQ"));
 	QVERIFY(m.compression.newDnx.isEmpty());
 	QVERIFY(m.timing.duration);
@@ -356,6 +360,34 @@ void TestBellaMatching::selectedFieldPriorities()
 	QCOMPARE(label(m.timing), QStringLiteral("00:01:00:00"));
 	QCOMPARE(answer.localReference, Bella::LocalReference::Listed);
 	QVERIFY(!answer.needsHeader);
+}
+
+void TestBellaMatching::selectedFixedPointBitDepth_data()
+{
+	QTest::addColumn<Bella::MdbDepthRepresentation>("representation");
+	QTest::addColumn<quint32>("expectedBits");
+	QTest::newRow("10.6 fixed point") << Bella::MdbDepthRepresentation::Fixed10_6 << quint32(10);
+	QTest::newRow("12.4 fixed point") << Bella::MdbDepthRepresentation::Fixed12_4 << quint32(12);
+}
+
+void TestBellaMatching::selectedFixedPointBitDepth()
+{
+	QFETCH(Bella::MdbDepthRepresentation, representation);
+	QFETCH(quint32, expectedBits);
+	auto database = mdb();
+	auto &file = database.catalogue.files[0];
+	file.bitDepth.bits.reset();
+	file.bitDepth.storageBits = 16;
+	file.bitDepth.representation = representation;
+	file.bitDepth.rawComponentWidth = qint32(expectedBits);
+	file.compression.codingLabel = coding("060e2b340401010d0401020203070200");
+
+	const auto context = Bella::prepareMatchContext({listedPmr()}, {database}, {folder});
+	const auto header = mxf();
+	const auto answer = Bella::matchFile(context, physical, true, std::cref(header), false);
+	QVERIFY(!answer.metadata.bitDepth.bits);
+	QCOMPARE(answer.metadata.bitDepth.storageBits, std::optional<quint32>(16));
+	QCOMPARE(answer.metadata.interpretedBitDepth, std::optional<quint32>(expectedBits));
 }
 
 void TestBellaMatching::headerNeeded_data()
@@ -845,8 +877,10 @@ void TestBellaMatching::nativeAndEmbeddedTechnicalFacts()
 	if (variation == 3)
 	{
 		QVERIFY(!metadata.sampleRate);
+		QVERIFY(!metadata.exactSampleRate);
 		QVERIFY(!metadata.bitDepth.bits);
 		QCOMPARE(metadata.bitDepth.representation, Bella::MatchDepthRepresentation::Unknown);
+		QVERIFY(!metadata.interpretedBitDepth);
 		QVERIFY(metadata.compression.compressionName.isEmpty());
 	}
 	else
@@ -1027,19 +1061,26 @@ void TestBellaMatching::originalAudioFrequency()
 	const auto context = Bella::prepareMatchContext({listedPmr()}, {database}, {folder});
 	const auto answer = Bella::matchFile(context, physical, true, {}, false);
 	QVERIFY(answer.metadata.sampleRate);
+	QVERIFY(answer.metadata.exactSampleRate);
+	const auto exactRate = *answer.metadata.exactSampleRate;
 	QVERIFY(!answer.metadata.frameRate);
 	if (variation == 0)
 	{
 		const auto rate = std::get<Bella::MatchRateWords>(*answer.metadata.sampleRate);
 		QCOMPARE(rate.numerator, qint32(441001));
 		QCOMPARE(rate.denominator, qint32(10));
+		QVERIFY(sameRate(exactRate, {441001, 10}));
 	}
 	if (variation == 1)
+	{
 		QCOMPARE(std::get<quint32>(*answer.metadata.sampleRate), quint32(0xffffffffu));
+		QVERIFY(sameRate(exactRate, {0xffffffffu, 1}));
+	}
 	if (variation == 2)
 	{
 		const auto bytes = std::get<std::array<quint8, 10>>(*answer.metadata.sampleRate);
 		QCOMPARE(bytes, frequency);
+		QVERIFY(sameRate(exactRate, {48000, 1}));
 	}
 	QCOMPARE(answer.metadata.bitDepth.bits, std::optional<quint32>(24));
 	QCOMPARE(answer.metadata.bitDepth.storageBits, variation == 1 ? std::optional<quint32>(32) : std::optional<quint32>{});

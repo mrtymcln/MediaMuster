@@ -31,10 +31,10 @@ struct BellaRowValues
 	std::optional<Bella::MatchAudioFrequency> sampleRate;
 	Bella::MatchBitDepth bitDepth;
 	Bella::FileTiming timing;
-	// Bella supplies the exact frame rate. The scan conversion prepares the
-	// sample rate and duration timecode for the table and exporter.
+	// Bella supplies the exact rates and interpreted bit depth.
 	std::optional<Bella::TimingRate> frameRateValue;
 	std::optional<Bella::TimingRate> sampleRateValue;
+	std::optional<quint32> bitDepthValue;
 	std::tuple<qint64, int, int, int> durationTimecode{-1, 0, 0, 0};
 };
 
@@ -307,18 +307,7 @@ struct MediaFileRecord
 
 	std::optional<quint32> bellaDepthBits() const
 	{
-		if (!bellaValues)
-			return std::nullopt;
-		const auto &depth = bellaValues->bitDepth;
-		switch (depth.representation)
-		{
-		case Bella::MatchDepthRepresentation::Fixed10_6:
-			return 10;
-		case Bella::MatchDepthRepresentation::Fixed12_4:
-			return 12;
-		default:
-			return depth.bits;
-		}
+		return bellaValues ? bellaValues->bitDepthValue : std::nullopt;
 	}
 
 	QString bitDepthDisplay() const

@@ -98,7 +98,9 @@ namespace Bella
 		std::optional<MatchFrameRate> frameRate;
 		std::optional<TimingRate> exactFrameRate;
 		std::optional<MatchAudioFrequency> sampleRate;
+		std::optional<TimingRate> exactSampleRate;
 		MatchBitDepth bitDepth;
+		std::optional<quint32> interpretedBitDepth;
 		FileTiming timing;
 		CompressionNames compression;
 		EffectNames effects;

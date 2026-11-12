@@ -77,6 +77,7 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 	m.frameRate = Bella::MatchFrameRate{{2997, 100}, Bella::MatchRateMeaning::AvidExactEditRate};
 	m.exactFrameRate = Bella::TimingRate{30000, 1001};
 	m.bitDepth.bits = 10;
+	m.interpretedBitDepth = 10;
 	m.compression.compressionName = QStringLiteral("JPEG2000");
 	m.effects = {QStringLiteral("Dissolve"), QStringLiteral("Blend")};
 	m.timing = {Bella::ExactDuration{0, {30000, 1001}},
@@ -197,14 +198,19 @@ void TestBellaPresentation::ratesSortExactly()
 	auto wave = named(QStringLiteral("WAVE"));
 	wave.metadata.kind = Bella::MatchKind::Audio;
 	wave.metadata.sampleRate = quint32(48000);
+	wave.metadata.exactSampleRate = Bella::TimingRate{48000, 1};
 	auto aiff = named(QStringLiteral("AIFF"));
 	aiff.metadata.kind = Bella::MatchKind::Audio;
 	const std::array<quint8, 10> extended{0x40, 0x0e, 0xbb, 0x80, 0, 0, 0, 0, 0, 1};
 	aiff.metadata.sampleRate = extended;
+	// The last bit makes the AIFF rate slightly higher than the WAVE rate.
+	aiff.metadata.exactSampleRate = Bella::TimingRate{0xbb80000000000001ULL, quint64{1} << 48};
 	auto maximum = wave;
 	maximum.metadata.clipName = QStringLiteral("unsigned WAVE");
 	maximum.metadata.sampleRate = std::numeric_limits<quint32>::max();
+	maximum.metadata.exactSampleRate = Bella::TimingRate{std::numeric_limits<quint32>::max(), 1};
 	const auto widest = mediaFileRecordFromScanEntry(maximum);
+	QVERIFY(widest.bellaValues->sampleRateValue);
 	QCOMPARE(widest.bellaValues->sampleRateValue->numerator, quint64(std::numeric_limits<quint32>::max()));
 	model.setMediaFiles({widest, mediaFileRecordFromScanEntry(aiff), mediaFileRecordFromScanEntry(wave)});
 	QCOMPARE(cell(model, 1, Col::SampleRate), QStringLiteral("48 kHz"));
@@ -219,8 +225,10 @@ void TestBellaPresentation::fixedPointDepthRendersExportsAndSorts()
 	using Depth = Bella::MatchDepthRepresentation;
 	auto fixed12 = named(QStringLiteral("fixed12.mxf"));
 	fixed12.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed12_4};
+	fixed12.metadata.interpretedBitDepth = 12;
 	auto fixed10 = named(QStringLiteral("fixed10.mxf"));
 	fixed10.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed10_6};
+	fixed10.metadata.interpretedBitDepth = 10;
 
 	MediaTableModel model;
 	model.setMediaFiles({mediaFileRecordFromScanEntry(fixed12), mediaFileRecordFromScanEntry(fixed10)});

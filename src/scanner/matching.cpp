@@ -209,6 +209,18 @@ namespace Bella
 				return MatchDepthRepresentation::Unknown;
 			}
 		}
+		std::optional<quint32> interpretBitDepth(const MatchBitDepth &depth)
+		{
+			switch (depth.representation)
+			{
+			case MatchDepthRepresentation::Fixed10_6:
+				return 10;
+			case MatchDepthRepresentation::Fixed12_4:
+				return 12;
+			default:
+				return depth.bits;
+			}
+		}
 
 		// MARK: - Candidate collection
 
@@ -599,8 +611,13 @@ namespace Bella
 				metadata.exactFrameRate = interpretFrameRate(*metadata.frameRate);
 		}
 		if (metadata.kind == MatchKind::Audio)
+		{
 			metadata.sampleRate = database.sampleRate.orElse(fallback.sampleRate);
+			if (metadata.sampleRate)
+				metadata.exactSampleRate = frequencyRate(*metadata.sampleRate);
+		}
 		metadata.bitDepth = database.bitDepth.orElse(fallback.bitDepth).value_or(MatchBitDepth{});
+		metadata.interpretedBitDepth = interpretBitDepth(metadata.bitDepth);
 		metadata.compression = fallback.compression.orElse(database.compression);
 		metadata.timing = safeDescriptor ? database.timing.selected() : fallback.timing.selected();
 		if (details)

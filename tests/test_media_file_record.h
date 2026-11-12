@@ -33,6 +33,7 @@ namespace TestMediaFile
 	{
 		values(file).bitDepth.bits = bits;
 		values(file).bitDepth.representation = Bella::MatchDepthRepresentation::Integer;
+		values(file).bitDepthValue = bits;
 	}
 
 	inline void setDuration(MediaFileRecord &file, qint64 count, quint16 base = 25, bool drop = false)

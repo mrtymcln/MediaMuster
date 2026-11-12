@@ -1,6 +1,5 @@
 #include "scan_result_p.h"
 
-#include "scanner/audio_format_decoder_p.h"
 #include "scanner/bella_scanner.h"
 #include "media/media_file_record.h"
 #include "media/omf_uid.h"
@@ -9,39 +8,7 @@
 #include <QFileInfo>
 
 #include <algorithm>
-#include <type_traits>
 #include <utility>
-
-// MARK: - Timing conversion helpers
-
-namespace
-{
-	std::optional<Bella::TimingRate> positiveRate(Bella::MatchRateWords words)
-	{
-		if (words.numerator <= 0 || words.denominator <= 0)
-			return std::nullopt;
-		return Bella::TimingRate{quint64(words.numerator), quint64(words.denominator)};
-	}
-
-	std::optional<Bella::TimingRate> audioRate(const std::optional<Bella::MatchAudioFrequency> &rate)
-	{
-		if (!rate)
-			return std::nullopt;
-		return std::visit([](const auto &value) -> std::optional<Bella::TimingRate>
-						  {
-				using T = std::decay_t<decltype(value)>;
-				if constexpr (std::is_same_v<T, Bella::MatchRateWords>)
-					return positiveRate(value);
-				else if constexpr (std::is_same_v<T, quint32>)
-				{
-					if (value)
-						return Bella::TimingRate{value, 1};
-				}
-				else if (const auto frequency = Bella::Detail::exactAiffFrequency(value))
-					return Bella::TimingRate{frequency->numerator, frequency->denominator};
-				return std::nullopt; }, *rate);
-	}
-}
 
 // MARK: - Prepared media record
 
@@ -156,7 +123,8 @@ MediaFileRecord mediaFileRecordFromScanEntry(const Bella::ScanEntry &entry)
 	values.bitDepth = metadata.bitDepth;
 	values.timing = metadata.timing;
 	values.frameRateValue = metadata.exactFrameRate;
-	values.sampleRateValue = audioRate(values.sampleRate);
+	values.sampleRateValue = metadata.exactSampleRate;
+	values.bitDepthValue = metadata.interpretedBitDepth;
 	if (values.timing.duration && values.timing.display)
 	{
 		const auto &display = *values.timing.display;

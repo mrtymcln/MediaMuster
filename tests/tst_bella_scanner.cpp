@@ -623,6 +623,7 @@ void TestBellaScanner::matchesAfterHeader()
 		QCOMPARE(*reason, Bella::RescanReason::FileChanged);
 		QCOMPARE(metadata.kind, Bella::MatchKind::Unknown);
 		QVERIFY(!metadata.sampleRate);
+		QVERIFY(!metadata.exactSampleRate);
 		QVERIFY(!metadata.timing.duration);
 		QVERIFY(std::any_of(result.problems.cbegin(), result.problems.cend(), [&](const auto &problem)
 							{ return problem.path == path && problem.reason.contains(QStringLiteral("changed after discovery"), Qt::CaseInsensitive); }));
@@ -632,6 +633,9 @@ void TestBellaScanner::matchesAfterHeader()
 		QVERIFY(std::holds_alternative<Bella::CheckPhysicalFile>(entry.operationSafety));
 		QVERIFY(result.problems.isEmpty());
 		QCOMPARE(metadata.kind, Bella::MatchKind::Audio);
+		QVERIFY(metadata.exactSampleRate);
+		QCOMPARE(metadata.exactSampleRate->numerator, quint64(48000));
+		QCOMPARE(metadata.exactSampleRate->denominator, quint64(1));
 		QCOMPARE(metadata.bitDepth.bits, std::optional<quint32>(16));
 		QCOMPARE(metadata.compression.compressionName, QStringLiteral("PCM"));
 		QVERIFY(metadata.timing.duration);
