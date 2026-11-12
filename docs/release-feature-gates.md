@@ -112,12 +112,7 @@ switches and their current values. Rebuild after changing a value.
 | kOmfScan | Scans discover and parse managed OMF essence. | Scans admit MXF essence only and skip OMFI MediaFiles trees, including manually added folders. |
 | kPrecomputeFilter | Adds precompute detail columns and CSV fields, the Precomputes tab, toolbar filter and Special > Filter Precomputes. | Hides precompute details and filtering; rendered media remains in ordinary scan results. |
 | kUndo | Makes file-operation Undo available in Edit, with its shortcut, for eligible recorded jobs. | Hides file-operation Undo, removes its shortcut and rejects new Undo requests. Normal text-editing Undo still works. |
-| kDebugMenu | Shows the session-only Fusion style toggle in the Debug menu. | Omits the Debug menu. |
 
-OMF, Precomputes and Undo have no Debug menu controls. Their availability is
-independent of whether the Debug menu is included. Fusion style starts off on
-each launch. The table and headers inherit normal Qt font styling; the Console
-keeps its monospaced font. Neither has a font feature flag or table-font control.
 Exact sequence filtering is deferred after V1; there is no dormant sequence flag
 or picker in the current build.
 
@@ -135,8 +130,7 @@ cmake --build build --config Release --parallel 4
 
 These values are compiled into the app. No saved preference, CMake option,
 version number, Git tag, or CI setting changes them. They are also independent
-of the compiler's Debug/Release configuration. Set `kDebugMenu` to `false`
-to omit the developer menu; select each feature's availability separately.
+of the compiler's Debug/Release configuration.
 
-The operation UI tests check startup configuration against these constants and
-verify that the removed feature toggles are absent. Rebuild after changing flags.
+The operation UI tests check startup configuration against these constants.
+Rebuild after changing flags.

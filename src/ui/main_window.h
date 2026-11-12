@@ -114,7 +114,6 @@ private:
 	void buildEditMenu();
 	void buildViewMenu();
 	void buildSpecialMenu();
-	void buildDebugMenu();
 	void buildHelpMenu();
 
 	void setupConnections();

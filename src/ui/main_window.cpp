@@ -51,7 +51,6 @@
 #include <QStatusBar>
 #include <QStorageInfo>
 #include <QStyle>
-#include <QStyleFactory>
 #include <QSysInfo>
 #include <QTabBar>
 #include <QTableView>
@@ -562,7 +561,6 @@ void MainWindow::setupMenus()
 	buildEditMenu();
 	buildViewMenu();
 	buildSpecialMenu();
-	buildDebugMenu();
 	buildHelpMenu();
 }
 
@@ -685,29 +683,6 @@ void MainWindow::buildSpecialMenu()
 	m_rebalanceAction = specialMenu->addAction(tr("&Rebalance…"));
 	m_rebalanceAction->setObjectName(QStringLiteral("rebalanceAction"));
 	connect(m_rebalanceAction, &QAction::triggered, this, &MainWindow::onRebalance);
-}
-
-// MARK: Debug menu
-
-void MainWindow::buildDebugMenu()
-{
-	if constexpr (!FeatureFlags::kDebugMenu)
-		return;
-
-	auto *debugMenu = menuBar()->addMenu(tr("&Debug"));
-	debugMenu->setObjectName(QStringLiteral("debugMenu"));
-	// Save the startup style before the debug toggle changes it.
-	const QString nativeStyleName = QApplication::style()->name();
-	auto *fusionStyleAction = debugMenu->addAction(tr("Fusion style"));
-	fusionStyleAction->setObjectName(QStringLiteral("fusionStyleDebugAction"));
-	fusionStyleAction->setCheckable(true);
-	fusionStyleAction->setChecked(false);
-	connect(fusionStyleAction, &QAction::triggered, this,
-			[nativeStyleName](bool on)
-			{
-				const QString target = on ? QStringLiteral("fusion") : nativeStyleName;
-				QApplication::setStyle(QStyleFactory::create(target));
-			});
 }
 
 // MARK: Help menu

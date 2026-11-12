@@ -28,9 +28,10 @@
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QSet>
-#include <QStyleFactory>
 #include <QShowEvent>
 #include <QSignalBlocker>
+#include <QStyle>
+#include <QStyleFactory>
 #include <QVBoxLayout>
 #include <QtConcurrent>
 
@@ -417,6 +418,7 @@ void RebalanceDialog::setupUi()
 		m_statsLine->setFont(f);
 	}
 	root->addWidget(m_statsLine);
+	m_statsLine->hide();
 
 	// MARK: Folder card grid
 
@@ -434,12 +436,13 @@ void RebalanceDialog::setupUi()
 	m_cardScroll->setWidget(m_cardContainer);
 	m_cardScroll->setWidgetResizable(true);
 	m_cardScroll->setFrameShape(QFrame::NoFrame);
-	// Use Fusion for a persistent scrollbar with arrows; parent its style to the dialog.
 	m_cardScroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-	if (auto *fusion = QStyleFactory::create(QStringLiteral("Fusion")))
+	// Keep the folder grid's vertical scrollbar visible with arrow buttons.
+	if (auto *fusionStyle = QStyleFactory::create(QStringLiteral("Fusion")))
 	{
-		fusion->setParent(this);
-		m_cardScroll->verticalScrollBar()->setStyle(fusion);
+		auto *scrollBar = m_cardScroll->verticalScrollBar();
+		fusionStyle->setParent(scrollBar);
+		scrollBar->setStyle(fusionStyle);
 	}
 	root->addWidget(m_cardScroll, 1);
 
@@ -496,8 +499,8 @@ void RebalanceDialog::recomputePlan()
 	m_cardScroll->setEnabled(false);
 	m_rebalanceButton->setEnabled(false);
 	m_statsLine->setText(tr("Computing plan..."));
-	// Standard palette text, matching the summary and balanced states.
 	m_statsLine->setStyleSheet(QString());
+	m_statsLine->show();
 
 	// Probe folders off the GUI thread, using value captures independent of dialog lifetime.
 	m_planWatcher.setFuture(QtConcurrent::run(
@@ -516,27 +519,18 @@ void RebalanceDialog::onPlanReady()
 
 void RebalanceDialog::renderPlan()
 {
-	QStringList newFolderNames;
-	for (const NumberedMxfFolder &fid : m_currentPlan.newFolders)
-		newFolderNames << fid.display();
-
-	// MARK: Compute affected-folder set
-
-	const QSet<NumberedMxfFolder> affected = affectedFolders();
-
 	// MARK: Summary line
 
-	if (m_currentPlan.moveCount() == 0)
+	const bool hasWork = m_currentPlan.moveCount() > 0;
+	if (hasWork)
 	{
-		m_statsLine->setText(tr("The Force is balanced..."));
-		// Standard palette text, matching the "N files moving..." summary and
-		// the "Computing plan..." state on the same shared label.
-		m_statsLine->setStyleSheet(QString());
+		buildSummaryLine(m_currentPlan.moveCount(), affectedFolders().size(),
+						 m_currentPlan.newFolders.size(), /*past=*/false);
 	}
 	else
 	{
-		buildSummaryLine(m_currentPlan.moveCount(), affected.size(), newFolderNames.size(),
-						 /*past=*/false);
+		m_statsLine->hide();
+		m_statsLine->clear();
 	}
 
 	// MARK: Rebuild the card grid
@@ -573,9 +567,6 @@ void RebalanceDialog::renderPlan()
 		}
 	}
 
-	// Disable Rebalance when the plan is a no-op. The stats line already
-	// reads "The Force is balanced..." in that state, so no tooltip is needed.
-	const bool hasWork = m_currentPlan.moveCount() > 0;
 	m_rebalanceButton->setEnabled(hasWork && !m_running);
 }
 
@@ -846,4 +837,5 @@ void RebalanceDialog::buildSummaryLine(int files, int foldersAffected, int newFo
 				 newFolders < 0 ? tr("Unknown") : Format::count(newFolders), newCaption);
 	m_statsLine->setText(text);
 	m_statsLine->setStyleSheet({});
+	m_statsLine->show();
 }

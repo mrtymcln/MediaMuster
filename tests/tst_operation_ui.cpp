@@ -43,7 +43,10 @@
 #include <QProgressBar>
 #include <QPushButton>
 #include <QScopeGuard>
+#include <QScrollArea>
+#include <QScrollBar>
 #include <QSignalSpy>
+#include <QStyle>
 #include <QTabBar>
 #include <QTableView>
 #include <QTemporaryDir>
@@ -1158,8 +1161,7 @@ void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
 {
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.show();
-	auto *debugMenu = window.findChild<QMenu *>(QStringLiteral("debugMenu"));
-	QCOMPARE(debugMenu != nullptr, FeatureFlags::kDebugMenu);
+	QVERIFY(!window.findChild<QMenu *>(QStringLiteral("debugMenu")));
 	for (const auto *name : {"enableOmfDebugAction", "enablePrecomputesDebugAction", "enableUndoDebugAction"})
 		QVERIFY(!window.findChild<QAction *>(QString::fromLatin1(name)));
 	QCOMPARE(window.m_omfScanEnabled, FeatureFlags::kOmfScan);
@@ -3320,8 +3322,19 @@ void TestOperationUi::rebalance_live_counts_follow_confirmed_results()
 {
 	const auto plan = smallRebalancePlan(path("Avid MediaFiles/MXF"));
 	RebalanceDialog dialog({}, {}, {});
+	const auto *verticalStyle = dialog.m_cardScroll->verticalScrollBar()->style();
+	QVERIFY(verticalStyle != dialog.style());
+	QCOMPARE(verticalStyle->name().toLower(), QStringLiteral("fusion"));
+	QCOMPARE(dialog.m_cardScroll->horizontalScrollBar()->style(), dialog.style());
+
+	dialog.renderPlan();
+	QVERIFY(dialog.m_statsLine->isHidden());
+	QVERIFY(dialog.m_statsLine->text().isEmpty());
+	QVERIFY(!dialog.m_rebalanceButton->isEnabled());
+
 	dialog.m_currentPlan = plan;
 	dialog.renderPlan();
+	QVERIFY(!dialog.m_statsLine->isHidden());
 	dialog.primeLiveState();
 	dialog.m_running = true;
 	const auto originalCounts = dialog.m_runningCount;

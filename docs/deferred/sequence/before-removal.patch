@@ -1,5 +1,5 @@
 diff --git a/Project Copland/README.md b/Project Copland/README.md
-index fff34b6..e7732b4 100644
+index fff34b6..5fc681b 100644
 --- a/Project Copland/README.md	
 +++ b/Project Copland/README.md	
 @@ -13,6 +13,15 @@ one selected MasterMobId per physical file, complete Source Path replacement,
@@ -158,7 +158,7 @@ index fff34b6..e7732b4 100644
 +
 +| Cleanup | Remaining work |
 +| --- | --- |
-+| C82: Monospace table control | Remove the table action, toggle/helper and feature flag. Keep Fusion and the Console's separate font use. |
++| C82: Monospace table control | Remove the table action, toggle/helper and feature flag. Keep the Console's separate font use. |
 +| C83: Full Disk Access | Remove the startup probe/warning, Help action and Settings helpers. Retain ordinary read-error reporting. |
 +| C78: Main-window Escape | Clear Search without resetting Project or view. Preserve dialog dismissal and progress cancellation. |
 +| C60: Volume polling | Remove the automatic timer, watcher and busy/catch-up wiring. Keep startup discovery and manual Refresh. |

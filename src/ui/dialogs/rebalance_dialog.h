@@ -101,7 +101,7 @@ private:
 
 	QComboBox *m_volumePicker = nullptr;
 
-	/// Shows the plan summary, planning progress or an empty-plan message.
+	/// Shows planning status and move summaries.
 	QLabel *m_statsLine = nullptr;
 
 	/// Rebuild cards for a new plan; update affected cards as moves complete.

@@ -36,7 +36,6 @@ The [2026 Avid Effects Guide](https://resources.avid.com/SupportFiles/attach/Med
 - **Motion Effect / Timewarp:** the component visitor supplies the family name for motion-control, repeat and strobe branches. Timewarp is a family mapping from the main registration; this does not claim a palette item literally named Motion Effect.
 - **D-Verb / AudioSuite:** the visitor groups AudioSuite renders and obtains the plug-in name. The shipped Editing Guide names D-Verb as an audio track effect and AudioSuite effect, and the installed DVerb plug-in contains the exact name. That separately versioned plug-in was **26.4.0.175**, SHA-256 `7258623bf1dff629cb43f8896d824adaf7d19524d547b2584191f4587fef4c13`. AudioSuite describes the render mechanism here, not a claimed Reverb palette category. This is not a complete catalogue of installed AAX/AudioSuite plug-ins.
 
-
 ## Updating the catalogue
 
 Treat the registrations and shipped resources as version-specific source material.

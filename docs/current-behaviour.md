@@ -86,10 +86,10 @@ Change the corresponding flag and rebuild to change its availability. Rendered
 media remains in ordinary scan results when precompute details and filtering
 are disabled.
 
-The Debug menu is enabled by default through its own build flag and contains
-**Fusion style** (off at launch). The media table and headers inherit normal Qt
-font styling; the Console retains its monospaced font. See
-[release feature gates](release-feature-gates.md).
+See [release feature gates](release-feature-gates.md) for the effect of each flag.
+
+The media table and headers inherit the standard Qt font styling. The Console
+uses a monospaced font.
 
 ## Menus
 

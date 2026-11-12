@@ -1,12 +1,12 @@
 {
   "baseCommit": "f8f8c2bec39870928680a07ac4b229e6f4502bc5",
   "patch": "before-removal.patch",
-  "patchSha256": "d00735c04ec2fb12627911e8fca710d3c6c58842fe34676f78da13f8b12d4068",
-  "scope": "Complete pre-removal tracked working diff plus untracked evidence. This also preserves earlier bin/source-track work; do not apply wholesale onto the cleaned working tree.",
+  "patchSha256": "d60ac1d518644c9f925b1269e539016ac35130e47b8e38ab65ef13d6a6d7c29a",
+  "scope": "Saved pre-removal tracked working diff plus untracked evidence. This also preserves earlier bin/source-track work; do not apply wholesale onto the cleaned working tree.",
   "files": [
     {
       "path": "Project Copland/README.md",
-      "sha256": "b886b3c3c04a523accedfd1896f414b6f4dcde47f358796803a97935389a3d62"
+      "sha256": "06ccedd73180c59070b975464e1e98aadb59dcda69497bb36c90f4ab902f853f"
     },
     {
       "path": "Project Copland/metadata-reference.md",
