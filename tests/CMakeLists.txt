@@ -136,7 +136,7 @@ mediamuster_add_test(tst_rebalance_planner operations
 )
 
 mediamuster_add_test(tst_file_operations operations
-    ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/scan_result_p.cpp
     ${CMAKE_SOURCE_DIR}/src/operations/rebalancer.cpp
     ${CMAKE_SOURCE_DIR}/src/operations/rebalance_planner.cpp
     ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
@@ -168,7 +168,7 @@ mediamuster_add_test(tst_media_csv ui
 )
 
 mediamuster_add_test(tst_media_table_model ui
-    ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/scan_result_p.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp
     ${CMAKE_SOURCE_DIR}/src/media/media_csv.cpp
     ${CMAKE_SOURCE_DIR}/src/operations/operation_request.cpp
@@ -211,7 +211,7 @@ endif()
 set_tests_properties(tst_operation_ui PROPERTIES ENVIRONMENT "QT_QPA_PLATFORM=offscreen")
 
 mediamuster_add_test(tst_bella_presentation ui
-    ${CMAKE_SOURCE_DIR}/src/media/bella_media_mapper.cpp
+    ${CMAKE_SOURCE_DIR}/src/ui/scan_result_p.cpp
     ${CMAKE_SOURCE_DIR}/src/media/media_csv.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/media_filter_proxy.cpp
     ${CMAKE_SOURCE_DIR}/src/ui/media_table_model.cpp

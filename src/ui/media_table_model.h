@@ -1,13 +1,13 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 
 #include <QAbstractTableModel>
 #include <QSet>
 #include <QString>
 #include <QVector>
 
-/// One row per MediaFile. Optional columns are appended and the view positions
+/// One row per MediaFileRecord. Optional columns are appended and the view positions
 /// precompute details after Bit Depth.
 class MediaTableModel : public QAbstractTableModel
 {
@@ -61,7 +61,7 @@ public:
 	// MARK: - Bulk updates
 
 	/// Rows arrive with table values prepared by the scanner adapter.
-	void setMediaFiles(const QVector<MediaFile> &files);
+	void setMediaFiles(const QVector<MediaFileRecord> &files);
 	/// Confirmed transfers only: moves retain identity; copies allocate a new one.
 	void applyTransfer(const QString &source, const QString &destination, bool copy);
 	void setOmfScanEnabled(bool enabled);
@@ -74,8 +74,8 @@ public:
 
 	// MARK: - Row access
 
-	const MediaFile &fileAt(int row) const;
-	const QVector<MediaFile> &allFiles() const { return m_files; }
+	const MediaFileRecord &fileAt(int row) const;
+	const QVector<MediaFileRecord> &allFiles() const { return m_files; }
 
 	// MARK: - Precompute columns
 
@@ -87,7 +87,7 @@ public:
 private:
 	// MARK: - Model state
 
-	QVector<MediaFile> m_files;
+	QVector<MediaFileRecord> m_files;
 	bool m_precomputesEnabled = false;
 	bool m_omfScanEnabled = false;
 	KelpieIdAllocator m_ids;

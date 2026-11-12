@@ -63,7 +63,7 @@ std::optional<NumberedMxfFolder> RebalancePlanner::srcFolderOf(const QString &sr
 	return AvidMediaLayout::parseMxfFolderName(QFileInfo(srcPath).dir().dirName());
 }
 
-bool RebalancePlanner::isEligible(const MediaFile &file)
+bool RebalancePlanner::isEligible(const MediaFileRecord &file)
 {
 	const QFileInfo source(file.mediaFilePath);
 	if (file.omfEra || file.isQuarantined || !QDir::isAbsolutePath(file.mediaFilePath) || source.isSymLink() ||
@@ -127,7 +127,7 @@ namespace
 		return parent.absolutePath() + QChar(0x1f) + prefix + QChar(0x1f) + masterMobId;
 	}
 
-	QString relativesKey(const MediaFile &mf)
+	QString relativesKey(const MediaFileRecord &mf)
 	{
 		return relativesKey(mf.masterMobId, mf.mediaFilePath);
 	}
@@ -175,7 +175,7 @@ RebalancePlanner::countFolders(const QString &mxfRootPath, const QSet<NumberedMx
 // MARK: - Plan computation
 
 RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QString &volumeLabel,
-											const QVector<MediaFile> &files)
+											const QVector<MediaFileRecord> &files)
 {
 	RebalancePlan plan;
 	plan.mxfRootPath = mxfRootPath;
@@ -226,7 +226,7 @@ RebalancePlan RebalancePlanner::computePlan(const QString &mxfRootPath, const QS
 	// Keep each file's parsed folder for the packing loops.
 	struct IndexedMedia
 	{
-		const MediaFile *file;
+		const MediaFileRecord *file;
 		NumberedMxfFolder folder;
 	};
 

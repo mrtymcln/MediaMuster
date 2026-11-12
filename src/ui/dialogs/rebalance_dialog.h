@@ -1,6 +1,6 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "operations/rebalance_planner.h"
 
 #include <QDialog>
@@ -33,7 +33,7 @@ class RebalanceDialog : public QDialog
 
 public:
 	RebalanceDialog(const QHash<QString, QString> &mxfRootPathsByLabel,
-					const QHash<QString, QVector<MediaFile>> &filesByMxfRootPath,
+					const QHash<QString, QVector<MediaFileRecord>> &filesByMxfRootPath,
 					const QString &initialLabel, QWidget *parent = nullptr);
 
 	// MARK: - Result accessors
@@ -85,7 +85,7 @@ private:
 	QSet<NumberedMxfFolder> affectedFolders() const;
 
 	QHash<QString, QString> m_mxfRootPathsByLabel;
-	QHash<QString, QVector<MediaFile>> m_filesByMxfRootPath;
+	QHash<QString, QVector<MediaFileRecord>> m_filesByMxfRootPath;
 
 	RebalancePlan m_currentPlan;
 

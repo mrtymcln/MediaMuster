@@ -1,5 +1,5 @@
 #include "media/media_csv.h"
-#include "test_media_file.h"
+#include "test_media_file_record.h"
 
 #include <QFile>
 #include <QScopeGuard>
@@ -44,11 +44,11 @@ namespace
 		return fields;
 	}
 
-	MediaFile sampleRow()
+	MediaFileRecord sampleRow()
 	{
-		MediaFile f;
-		f.kind = MediaFile::Kind::Video;
-		f.type = MediaFile::Type::Media;
+		MediaFileRecord f;
+		f.kind = MediaFileRecord::Kind::Video;
+		f.type = MediaFileRecord::Type::Media;
 		f.clipName = QStringLiteral("Scene 1 - Take 3");
 		f.fileName = QStringLiteral("A11B22C33D44.mxf");
 		f.project = QStringLiteral("MyFilm");
@@ -94,7 +94,7 @@ private slots:
 
 void TestMediaCsv::selected_master_and_physical_row_identity_are_exported()
 {
-	MediaFile file = sampleRow();
+	MediaFileRecord file = sampleRow();
 	file.kelpieId = 42;
 	file.fileMobId = QStringLiteral("file-id");
 	file.masterMobId = QStringLiteral("selected-master");
@@ -116,25 +116,25 @@ void TestMediaCsv::blank_row_has_a_field_for_every_column()
 	for (const bool precomputes : {false, true})
 	{
 		const MediaCsv::Options options{precomputes};
-		QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFile{}, options)).size(),
+		QCOMPARE(readCsvRecord(MediaCsv::rowLine(MediaFileRecord{}, options)).size(),
 				 readCsvRecord(MediaCsv::headerLine(options)).size());
 	}
 }
 
 void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 {
-	MediaFile f = sampleRow();
+	MediaFileRecord f = sampleRow();
 	TestMediaFile::setSampleRate(f, 48000);
 	TestMediaFile::setBitDepth(f, 10);
-	f.type = MediaFile::Type::Precompute;
-	f.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	f.type = MediaFileRecord::Type::Precompute;
+	f.precomputeCategory = MediaFileRecord::PrecomputeCategory::RenderedEffects;
 	f.effectCategory = QStringLiteral("Image");
 	f.effect = QStringLiteral("Color Correction");
 	f.modified = QDateTime(QDate(2026, 9, 5), QTime(10, 15));
 	f.volumeName = QStringLiteral("EDIT");
 	f.mediaFolderName = QStringLiteral("1");
 	f.mediaFilePath = QStringLiteral("/Volumes/EDIT/Avid MediaFiles/MXF/1/A11B22C33D44.mxf");
-	f.dbStatus = MediaFile::DbStatus::NoReference;
+	f.dbStatus = MediaFileRecord::DbStatus::NoReference;
 	f.fileMobId = QStringLiteral("file-mob-id");
 	f.masterMobId = QStringLiteral("master-mob-id");
 	for (const bool precomputes : {false, true})
@@ -145,7 +145,7 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 		QStringList expectedFields{
 			QStringLiteral("Scene 1 - Take 3"), QStringLiteral("Rushes"), QStringLiteral("MyFilm"),
 			QStringLiteral("00:00:10:00"), QStringLiteral("Video"), QStringLiteral("Precompute"),
-			QStringLiteral("DNx HQX [DNxHD 175x]"), QStringLiteral("1920x1080"), QStringLiteral("25"),
+			QStringLiteral("DNx HQX [DNxHD 175x]"), QStringLiteral("1920x1080"), QStringLiteral("25.00"),
 			QStringLiteral("48 kHz"), QStringLiteral("10-bit")};
 		if (precomputes)
 		{
@@ -166,21 +166,21 @@ void TestMediaCsv::header_order_and_values_follow_the_export_schema()
 
 void TestMediaCsv::database_flags_are_unquoted_booleans_data()
 {
-	QTest::addColumn<MediaFile::DbStatus>("status");
+	QTest::addColumn<MediaFileRecord::DbStatus>("status");
 	QTest::addColumn<QString>("noDatabase");
 	QTest::addColumn<QString>("noReference");
-	QTest::newRow("listed") << MediaFile::DbStatus::Listed << QStringLiteral("false") << QStringLiteral("false");
-	QTest::newRow("checked-missing-reference") << MediaFile::DbStatus::NoReference << QStringLiteral("false") << QStringLiteral("true");
-	QTest::newRow("no-local-databases") << MediaFile::DbStatus::NoDatabase << QStringLiteral("true") << QStringLiteral("false");
-	QTest::newRow("unresolved-local-checks") << MediaFile::DbStatus::DbUnreadable << QStringLiteral("true") << QStringLiteral("false");
+	QTest::newRow("listed") << MediaFileRecord::DbStatus::Listed << QStringLiteral("false") << QStringLiteral("false");
+	QTest::newRow("checked-missing-reference") << MediaFileRecord::DbStatus::NoReference << QStringLiteral("false") << QStringLiteral("true");
+	QTest::newRow("no-local-databases") << MediaFileRecord::DbStatus::NoDatabase << QStringLiteral("true") << QStringLiteral("false");
+	QTest::newRow("unresolved-local-checks") << MediaFileRecord::DbStatus::DbUnreadable << QStringLiteral("true") << QStringLiteral("false");
 }
 
 void TestMediaCsv::database_flags_are_unquoted_booleans()
 {
-	QFETCH(MediaFile::DbStatus, status);
+	QFETCH(MediaFileRecord::DbStatus, status);
 	QFETCH(QString, noDatabase);
 	QFETCH(QString, noReference);
-	MediaFile file = sampleRow();
+	MediaFileRecord file = sampleRow();
 	file.dbStatus = status;
 	for (const bool precomputes : {false, true})
 	{
@@ -198,26 +198,26 @@ void TestMediaCsv::database_flags_are_unquoted_booleans()
 
 void TestMediaCsv::sample_rate_and_bit_depth_are_exported_data()
 {
-	QTest::addColumn<MediaFile::Kind>("kind");
+	QTest::addColumn<MediaFileRecord::Kind>("kind");
 	QTest::addColumn<int>("sampleRate");
 	QTest::addColumn<quint32>("bits");
 	QTest::addColumn<QString>("bitDepthLabel");
 	QTest::addColumn<QString>("sampleRateLabel");
-	QTest::newRow("audio-44.1-khz") << MediaFile::Kind::Audio << 44100 << quint32(16) << QStringLiteral("16-bit") << QStringLiteral("44.1 kHz");
-	QTest::newRow("audio-48-khz") << MediaFile::Kind::Audio << 48000 << quint32(24) << QStringLiteral("24-bit") << QStringLiteral("48 kHz");
-	QTest::newRow("audio-float") << MediaFile::Kind::Audio << 96000 << quint32(32) << QStringLiteral("32-bit") << QStringLiteral("96 kHz");
-	QTest::newRow("video-bit-depth") << MediaFile::Kind::Video << 0 << quint32(10) << QStringLiteral("10-bit") << QString();
-	QTest::newRow("unknown") << MediaFile::Kind::Unknown << 0 << quint32(0) << QString() << QString();
+	QTest::newRow("audio-44.1-khz") << MediaFileRecord::Kind::Audio << 44100 << quint32(16) << QStringLiteral("16-bit") << QStringLiteral("44.1 kHz");
+	QTest::newRow("audio-48-khz") << MediaFileRecord::Kind::Audio << 48000 << quint32(24) << QStringLiteral("24-bit") << QStringLiteral("48 kHz");
+	QTest::newRow("audio-float") << MediaFileRecord::Kind::Audio << 96000 << quint32(32) << QStringLiteral("32-bit") << QStringLiteral("96 kHz");
+	QTest::newRow("video-bit-depth") << MediaFileRecord::Kind::Video << 0 << quint32(10) << QStringLiteral("10-bit") << QString();
+	QTest::newRow("unknown") << MediaFileRecord::Kind::Unknown << 0 << quint32(0) << QString() << QString();
 }
 
 void TestMediaCsv::sample_rate_and_bit_depth_are_exported()
 {
-	QFETCH(MediaFile::Kind, kind);
+	QFETCH(MediaFileRecord::Kind, kind);
 	QFETCH(int, sampleRate);
 	QFETCH(quint32, bits);
 	QFETCH(QString, bitDepthLabel);
 	QFETCH(QString, sampleRateLabel);
-	MediaFile f = sampleRow();
+	MediaFileRecord f = sampleRow();
 	f.kind = kind;
 	TestMediaFile::setSampleRate(f, sampleRate);
 	TestMediaFile::setBitDepth(f, bits ? std::optional<quint32>(bits) : std::nullopt);
@@ -270,7 +270,7 @@ void TestMediaCsv::file_path_round_trips_csv()
 
 void TestMediaCsv::unknown_created_date_is_blank()
 {
-	MediaFile f = sampleRow();
+	MediaFileRecord f = sampleRow();
 	f.created = QDateTime(); // filesystem records no birth time
 	f.modified = QDateTime(QDate(2026, 7, 21), QTime(9, 45));
 	const auto headers = readCsvRecord(MediaCsv::headerLine());
@@ -294,7 +294,7 @@ void TestMediaCsv::formula_injection_is_neutralised_data()
 void TestMediaCsv::formula_injection_is_neutralised()
 {
 	QFETCH(QString, clipName);
-	MediaFile f = sampleRow();
+	MediaFileRecord f = sampleRow();
 	f.clipName = clipName;
 	const QString line = MediaCsv::rowLine(f);
 	QVERIFY(line.startsWith(QStringLiteral("\"'")));
@@ -355,7 +355,7 @@ void TestMediaCsv::unknown_classification_is_exported_without_guessing()
 	{
 		const MediaCsv::Options options{enabled};
 		const auto headers = readCsvRecord(MediaCsv::headerLine(options));
-		const auto unknown = readCsvRecord(MediaCsv::rowLine(MediaFile{}, options));
+		const auto unknown = readCsvRecord(MediaCsv::rowLine(MediaFileRecord{}, options));
 		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Kind"))), QStringLiteral("unknown"));
 		QCOMPARE(unknown.at(headers.indexOf(QStringLiteral("Type"))), QStringLiteral("unknown"));
 		const auto known = readCsvRecord(MediaCsv::rowLine(sampleRow(), options));
@@ -366,9 +366,9 @@ void TestMediaCsv::unknown_classification_is_exported_without_guessing()
 
 void TestMediaCsv::effect_details_are_explicit_and_quoted()
 {
-	MediaFile f = sampleRow();
-	f.type = MediaFile::Type::Precompute;
-	f.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	MediaFileRecord f = sampleRow();
+	f.type = MediaFileRecord::Type::Precompute;
+	f.precomputeCategory = MediaFileRecord::PrecomputeCategory::RenderedEffects;
 	f.effect = QStringLiteral("=Custom,\"Quoted\"\nEffect");
 	f.effectCategory = QStringLiteral("@Category,\"Quoted\"");
 	for (bool enabled : {false, true})
@@ -400,9 +400,9 @@ void TestMediaCsv::non_precompute_effect_fields_stay_blank()
 {
 	const MediaCsv::Options options{true};
 	const auto headers = readCsvRecord(MediaCsv::headerLine(options));
-	for (auto type : {MediaFile::Type::Media, MediaFile::Type::Unknown})
+	for (auto type : {MediaFileRecord::Type::Media, MediaFileRecord::Type::Unknown})
 	{
-		MediaFile f = sampleRow();
+		MediaFileRecord f = sampleRow();
 		f.type = type;
 		f.effect = f.effectCategory = QStringLiteral("stale detail");
 		const auto fields = readCsvRecord(MediaCsv::rowLine(f, options));
@@ -417,11 +417,11 @@ void TestMediaCsv::precompute_categories_preserve_unknown_details()
 	const auto headers = readCsvRecord(MediaCsv::headerLine(options));
 	const QStringList expected{QStringLiteral("Rendered Effects"), QStringLiteral("Titles and Matte Keys"), QString{}};
 	int row = 0;
-	for (auto category : {MediaFile::PrecomputeCategory::RenderedEffects,
-						  MediaFile::PrecomputeCategory::TitlesAndMatteKeys, MediaFile::PrecomputeCategory::Unknown})
+	for (auto category : {MediaFileRecord::PrecomputeCategory::RenderedEffects,
+						  MediaFileRecord::PrecomputeCategory::TitlesAndMatteKeys, MediaFileRecord::PrecomputeCategory::Unknown})
 	{
-		MediaFile file;
-		file.type = MediaFile::Type::Precompute;
+		MediaFileRecord file;
+		file.type = MediaFileRecord::Type::Precompute;
 		file.precomputeCategory = category;
 		const auto fields = readCsvRecord(MediaCsv::rowLine(file, options));
 		QCOMPARE(fields[headers.indexOf(QStringLiteral("Type"))], QStringLiteral("Precompute"));

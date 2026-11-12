@@ -10,7 +10,7 @@
 #include <optional>
 
 // Requests contain only the file facts execution and journal replay need.
-// Keeping them separate from MediaFile lets recovery work without a scan or UI.
+// Keeping them separate from MediaFileRecord lets recovery work without a scan or UI.
 
 // MARK: - OpKind
 
@@ -108,7 +108,7 @@ struct OperationItem
 	QString src;			 ///< Absolute source path; the item's identity key.
 	QString name;			 ///< Destination leaf name (usually the source's).
 	QString mediaFolderName; ///< Source folder name, reused when preserving MXF structure.
-	/// OMF-era: the scanner's verdict (MediaFile::omfEra). Preserve mode
+	/// OMF-era: the scanner's verdict (MediaFileRecord::omfEra). Preserve mode
 	/// sends a legacy file to <dest>/OMFI MediaFiles/ whatever `mediaFolderName`
 	/// says; journaled so a resumed run lands it in the same place.
 	bool omfEra = false;
@@ -118,11 +118,11 @@ struct OperationItem
 	QString policy;			  ///< Conflict policy by name; empty = none chosen.
 
 	// Scan claims about the media inside the file (empty when unknown).
-	QString fileMobId;		  ///< FileMobId of this essence file.
-	QString masterMobId;	  ///< The scan's one selected MasterMobId, empty when unresolved.
-	QString clipName;		  ///< The human name the editor knows the clip by.
+	QString fileMobId;	 ///< FileMobId of this essence file.
+	QString masterMobId; ///< The scan's one selected MasterMobId, empty when unresolved.
+	QString clipName;	 ///< The human name the editor knows the clip by.
 	QString scanPath;
-	QString scanVolumeIdentifier;					///< VolumeIdentity identifier, distinct from native expectedVolumeId.
+	QString scanVolumeIdentifier;						   ///< VolumeIdentity identifier, distinct from native expectedVolumeId.
 	std::optional<OperationHeaderIdentity> headerIdentity; ///< Captured media checks; absent for non-scanned inputs.
 	/// PMR/MDB file identity to verify when the scan deliberately skipped its header.
 	/// Kept separate from header-established IDs and database-only master associations.
@@ -201,6 +201,6 @@ Q_DECLARE_METATYPE(OperationResult)
 
 // MARK: - Row conversion
 
-struct MediaFile;
+struct MediaFileRecord;
 // Preserve the scan receipt and the Avid identity claims to verify on the opened file.
-OperationItem operationItemFromMediaFile(const MediaFile &file);
+OperationItem operationItemFromMediaFile(const MediaFileRecord &file);

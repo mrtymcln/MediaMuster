@@ -1,5 +1,5 @@
 #include "media_filter_proxy.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "media_table_model.h"
 
 #include <algorithm>
@@ -47,7 +47,7 @@ namespace
 		}
 	}
 
-	std::pair<qint64, qint64> bellaResolutionSortValue(const MediaFile &file)
+	std::pair<qint64, qint64> bellaResolutionSortValue(const MediaFileRecord &file)
 	{
 		if (!file.bellaValues || !file.bellaValues->resolution)
 			return {0, 0};
@@ -146,16 +146,16 @@ void MediaFilterProxy::setBinFilter(const AvbFilter &filter)
 
 // MARK: - Row filtering
 
-bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
+bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFileRecord &f)
 {
 	switch (mode)
 	{
 	case FilterMode::All:
 		return true;
 	case FilterMode::Video:
-		return f.kind == MediaFile::Kind::Video;
+		return f.kind == MediaFileRecord::Kind::Video;
 	case FilterMode::Audio:
-		return f.kind == MediaFile::Kind::Audio;
+		return f.kind == MediaFileRecord::Kind::Audio;
 	case FilterMode::NoDatabase:
 		return f.isNoDatabase(); // both couldn't-check states; the tooltip says which
 	case FilterMode::NoReference:
@@ -167,7 +167,7 @@ bool MediaFilterProxy::matchesMode(FilterMode mode, const MediaFile &f)
 		return f.isQuarantined;
 	case FilterMode::Precompute:
 		// The usage code's verdict (header or database); never a name shape.
-		return f.type == MediaFile::Type::Precompute;
+		return f.type == MediaFileRecord::Type::Precompute;
 	}
 	return true;
 }
@@ -177,7 +177,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 	Q_UNUSED(parent);
 	if (!m_sourceModel || row >= m_sourceModel->allFiles().size())
 		return false;
-	const MediaFile &f = m_sourceModel->fileAt(row);
+	const MediaFileRecord &f = m_sourceModel->fileAt(row);
 
 	if (!matchesMode(m_mode, f))
 		return false;
@@ -191,7 +191,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		return false;
 
 	if (m_precomputesEnabled && !m_precomputeVolumePath.isEmpty() &&
-		(f.type != MediaFile::Type::Precompute || f.volumePath != m_precomputeVolumePath))
+		(f.type != MediaFileRecord::Type::Precompute || f.volumePath != m_precomputeVolumePath))
 		return false;
 
 	if (!m_binFilter.matches(f.fileMobId))
@@ -211,7 +211,7 @@ bool MediaFilterProxy::filterAcceptsRow(int row, const QModelIndex &parent) cons
 		// stays: a Windows path ("E:/...") need not contain the label.
 		return matches(f.clipName) || matches(f.project) || matches(f.originalBin) ||
 			   matches(f.compression) || matches(f.volumeName) || matches(f.mediaFilePath) ||
-			   (m_precomputesEnabled && f.type == MediaFile::Type::Precompute &&
+			   (m_precomputesEnabled && f.type == MediaFileRecord::Type::Precompute &&
 				(matches(f.precomputeCategoryFilterLabel()) || matches(f.effectDisplay()) ||
 				 matches(f.effectCategoryDisplay())));
 	}

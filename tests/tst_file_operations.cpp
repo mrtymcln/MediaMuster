@@ -1,6 +1,6 @@
 #include "test_bento.h"
 #include "scanner/bella_scanner.h"
-#include "media/bella_media_mapper.h"
+#include "media/media_file_record.h"
 #include "operations/operation_runner.h"
 #include "operations/operation_manager.h"
 #include "operations/operation_request.h"
@@ -13,6 +13,7 @@
 #include "scanner/mxf_parser.h"
 #include "scanner/omf_parser.h"
 #include "media/omf_uid.h"
+#include "ui/scan_result_p.h"
 #include <QTest>
 #include <QSignalSpy>
 #include <QRegularExpression>
@@ -1505,7 +1506,7 @@ void TestFileOperations::header_checks_remain_independent_of_selected_master_dat
 void TestFileOperations::header_checks_remain_independent_of_selected_master()
 {
 	QFETCH(QString, selectedMasterMobId);
-	MediaFile file;
+	MediaFileRecord file;
 	file.mediaFilePath = QStringLiteral("/source/clip.mxf");
 	file.masterMobId = selectedMasterMobId;
 	file.scanStamp = {file.mediaFilePath, {}, {}, QStringLiteral("file-id"), selectedMasterMobId};
@@ -1585,7 +1586,7 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 													fromHeader ? Bella::FileIdOrigin::Header : Bella::FileIdOrigin::Database};
 		if (fromDatabase)
 		{
-			entry.match.metadata.fileMobId = verify;
+			entry.metadata.fileMobId = verify;
 			selectedFileId = expectedFileId;
 		}
 
@@ -1594,7 +1595,7 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 			QByteArray::fromHex("060a2b340101010501010f1013000000a1a2a3a4a5a6a7a8292a2b2c2d2e2f30"),
 			Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian);
 		QVERIFY(std::holds_alternative<Bella::MobId>(selectedMaster));
-		entry.match.metadata.masterMobId = std::get<Bella::MobId>(selectedMaster);
+		entry.metadata.masterMobId = std::get<Bella::MobId>(selectedMaster);
 		expectedMasterId = QStringLiteral("060a2b3401010105.01010f1013000000.a1a2a3a4a5a6a7a8.292a2b2c2d2e2f30");
 
 		// Change a byte outside the eight material bytes for the 32-byte ID,
@@ -1619,7 +1620,7 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 			QByteArray::fromHex("060a2b340101010501010f10130000000102030405060708191a1b1c1d1e1f21"),
 			Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian);
 		QVERIFY(std::holds_alternative<Bella::MobId>(selected));
-		entry.match.metadata.fileMobId = std::get<Bella::MobId>(selected);
+		entry.metadata.fileMobId = std::get<Bella::MobId>(selected);
 		selectedFileId = QStringLiteral("060a2b3401010105.01010f1013000000.0102030405060708.191a1b1c1d1e1f21");
 	}
 	put(path, payload);
@@ -1639,8 +1640,7 @@ void TestFileOperations::bella_handoff_checks_copy_move_delete()
 	QVERIFY(entry.modified.isValid());
 	QVERIFY(!entry.volumeIdentifier.isEmpty());
 
-	MediaFile row;
-	applyBellaOperationHandoff(row, entry);
+	const auto row = mediaFileRecordFromScanEntry(entry);
 	QVERIFY(row.operationScanReceipt);
 	OperationRequest request;
 	request.kind = OperationKind(kind);
@@ -1755,7 +1755,7 @@ void TestFileOperations::operation_scan_receipt_is_required()
 	QFETCH(int, kind);
 	QFETCH(bool, stamped);
 	Fixture f;
-	MediaFile file;
+	MediaFileRecord file;
 	file.mediaFilePath = f.src;
 	file.fileName = QFileInfo(f.src).fileName();
 	file.sizeBytes = f.bytes.size();
@@ -1809,7 +1809,7 @@ void TestFileOperations::operation_scan_receipt_is_required()
 void TestFileOperations::changed_scan_header_cannot_become_unknown()
 {
 	Fixture f;
-	MediaFile file;
+	MediaFileRecord file;
 	file.mediaFilePath = f.src;
 	file.fileName = QFileInfo(f.src).fileName();
 	file.sizeBytes = f.bytes.size();
@@ -1833,7 +1833,7 @@ void TestFileOperations::changed_scan_header_cannot_become_unknown()
 void TestFileOperations::conflicting_scan_header_is_refused_without_history()
 {
 	Fixture f;
-	MediaFile file;
+	MediaFileRecord file;
 	file.mediaFilePath = f.src;
 	file.fileName = QFileInfo(f.src).fileName();
 	file.sizeBytes = f.bytes.size();
@@ -2138,8 +2138,7 @@ void TestFileOperations::bella_rebalance_rescan_refuses_whole_plan()
 	plan.mxfRootPath = root;
 	for (const auto &entry : {operationEntryFor(first), staleEntry})
 	{
-		MediaFile row;
-		applyBellaOperationHandoff(row, entry);
+		const auto row = mediaFileRecordFromScanEntry(entry);
 		plan.ops.append({row.mediaFilePath, NumberedMxfFolder{{}, 3}, {}, row.sizeBytes, row.modified.toMSecsSinceEpoch(), {}, operationItemFromMediaFile(row)});
 	}
 	// The first file could move and its database could be retired if only the
@@ -2227,8 +2226,7 @@ void TestFileOperations::bella_rebalance_live_checks_and_recovery()
 		entry.operationSafety = Bella::VerifyFileId{std::get<Bella::MobId>(id),
 													database ? Bella::FileIdOrigin::Database : Bella::FileIdOrigin::Header};
 	}
-	MediaFile row;
-	applyBellaOperationHandoff(row, entry);
+	const auto row = mediaFileRecordFromScanEntry(entry);
 	RebalancePlan plan;
 	plan.mxfRootPath = root;
 	plan.ops.append({source, NumberedMxfFolder{{}, 2}, {}, row.sizeBytes, row.modified.toMSecsSinceEpoch(), {}, operationItemFromMediaFile(row)});
@@ -2317,10 +2315,10 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	const QString root = base + "/Avid MediaFiles/MXF";
 	const QString journalDirectory = base + "/journals";
 	ScopedJournalDirectory journals(journalDirectory);
-	QVector<MediaFile> files;
+	QVector<MediaFileRecord> files;
 	for (const auto &name : {QStringLiteral("a"), QStringLiteral("b"), QStringLiteral("c")})
 	{
-		MediaFile file;
+		MediaFileRecord file;
 		file.mediaFilePath = root + "/1/" + name + ".mxf";
 		file.mediaFolderName = "1";
 		file.masterMobId = MobId::format(QCryptographicHash::hash(
@@ -2333,7 +2331,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	QVERIFY(QDir().mkpath(root + "/2"));
 	RebalancePlan plan = RebalancePlanner::computePlan(root, "Vol", files);
 	plan.ops.clear();
-	for (const MediaFile &file : files)
+	for (const MediaFileRecord &file : files)
 		plan.ops.append(
 			{file.mediaFilePath, NumberedMxfFolder{QString(), 2}, file.masterMobId, file.sizeBytes, -1, file.fileMobId, {}});
 
@@ -2344,7 +2342,7 @@ void TestFileOperations::invalid_mxf_claims_are_refused_by_adapter()
 	rebalancer.reset();
 
 	int landed = 0;
-	for (const MediaFile &file : files)
+	for (const MediaFileRecord &file : files)
 	{
 		const bool atSource = QFile::exists(file.mediaFilePath);
 		const bool atDest = QFile::exists(root + "/2/" + QFileInfo(file.mediaFilePath).fileName());

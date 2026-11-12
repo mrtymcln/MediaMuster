@@ -1,6 +1,6 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 
 // UI fixtures contain Bella's already selected values. They neither invoke a
 // reader nor manufacture source evidence for presentation-only tests.
@@ -8,34 +8,34 @@
 
 namespace TestMediaFile
 {
-	inline BellaRowValues &values(MediaFile &file)
+	inline BellaRowValues &values(MediaFileRecord &file)
 	{
 		if (!file.bellaValues)
 			file.bellaValues.emplace();
 		return *file.bellaValues;
 	}
 
-	inline void setFrameRate(MediaFile &file, quint64 numerator, quint64 denominator = 1)
+	inline void setFrameRate(MediaFileRecord &file, quint64 numerator, quint64 denominator = 1)
 	{
 		values(file).frameRateValue = numerator && denominator
 										  ? std::optional<Bella::TimingRate>{{numerator, denominator}}
 										  : std::nullopt;
 	}
 
-	inline void setSampleRate(MediaFile &file, quint64 rate)
+	inline void setSampleRate(MediaFileRecord &file, quint64 rate)
 	{
 		values(file).sampleRateValue = rate
 										   ? std::optional<Bella::TimingRate>{{rate, 1}}
 										   : std::nullopt;
 	}
 
-	inline void setBitDepth(MediaFile &file, std::optional<quint32> bits)
+	inline void setBitDepth(MediaFileRecord &file, std::optional<quint32> bits)
 	{
 		values(file).bitDepth.bits = bits;
 		values(file).bitDepth.representation = Bella::MatchDepthRepresentation::Integer;
 	}
 
-	inline void setDuration(MediaFile &file, qint64 count, quint16 base = 25, bool drop = false)
+	inline void setDuration(MediaFileRecord &file, qint64 count, quint16 base = 25, bool drop = false)
 	{
 		auto &row = values(file);
 		const Bella::TimingRate rate = drop ? Bella::TimingRate{quint64(base) * 1000, 1001}

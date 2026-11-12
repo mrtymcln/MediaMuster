@@ -1,7 +1,7 @@
-#include "bella_app_scanner.h"
+#include "scan_manager.h"
+#include "scan_result_p.h"
 
 #include "scanner/bella_scanner.h"
-#include "media/bella_media_mapper.h"
 #include "media/avid_media_layout.h"
 #include "media/conventions.h"
 #include "support/diagnostics.h"
@@ -28,7 +28,7 @@ namespace
 
 	struct PreparedScan
 	{
-		QVector<MediaFile> rows;
+		QVector<MediaFileRecord> rows;
 		Bella::ScanOutcome outcome = Bella::ScanOutcome::Failed;
 		bool discoveryComplete = false;
 		qint64 elapsedMs = 0;
@@ -74,11 +74,11 @@ namespace
 		switch (stage)
 		{
 		case Bella::ScanStage::ReadingDatabases:
-			return BellaAppScanner::tr("Reading databases");
+			return ScanManager::tr("Reading databases");
 		case Bella::ScanStage::CheckingFiles:
-			return BellaAppScanner::tr("Checking files");
+			return ScanManager::tr("Checking files");
 		case Bella::ScanStage::ReadingHeaders:
-			return BellaAppScanner::tr("Reading required headers");
+			return ScanManager::tr("Reading required headers");
 		}
 		Q_UNREACHABLE();
 	}
@@ -113,18 +113,18 @@ namespace
 
 // MARK: - Scan worker
 
-struct BellaAppScanner::Run
+struct ScanManager::Run
 {
 	Bella::ScanControl control;
 	qsizetype warningCount = 0;
-	// The organiser writes once. The facade reads only after the thread is ready.
+	// The organiser writes once. The manager reads after the thread is ready.
 	std::optional<PreparedScan> completion;
 
-	PreparedScan prepare(const Bella::ScanRequest &request, const QPointer<BellaAppScanner> &owner);
+	PreparedScan prepare(const Bella::ScanRequest &request, const QPointer<ScanManager> &owner);
 };
 
-PreparedScan BellaAppScanner::Run::prepare(const Bella::ScanRequest &request,
-										   const QPointer<BellaAppScanner> &owner)
+PreparedScan ScanManager::Run::prepare(const Bella::ScanRequest &request,
+									   const QPointer<ScanManager> &owner)
 {
 	QElapsedTimer timer;
 	timer.start();
@@ -146,7 +146,7 @@ PreparedScan BellaAppScanner::Run::prepare(const Bella::ScanRequest &request,
 		{
 			if (logs.isEmpty())
 				return;
-			post([batch = std::exchange(logs, {})](BellaAppScanner &scanner)
+			post([batch = std::exchange(logs, {})](ScanManager &scanner)
 				 { emit scanner.scanLogBatch(batch); });
 		};
 		const auto logProblem = [&](const Bella::ScanProblem &problem)
@@ -180,12 +180,12 @@ PreparedScan BellaAppScanner::Run::prepare(const Bella::ScanRequest &request,
 		Bella::ScanCallbacks callbacks;
 		callbacks.discovering = [&](const QString &path)
 		{
-			post([path](BellaAppScanner &scanner)
+			post([path](ScanManager &scanner)
 				 { emit scanner.scanDiscovering(path); });
 		};
 		callbacks.stageProgress = [&](Bella::ScanStage next, qsizetype completed, qsizetype total, const QString &path)
 		{
-			post([name = stageName(next), completed, total, path](BellaAppScanner &scanner)
+			post([name = stageName(next), completed, total, path](ScanManager &scanner)
 				 { emit scanner.scanProgress(name, completed, total, path); });
 		};
 		callbacks.warning = [&](const Bella::ScanProblem &problem)
@@ -196,7 +196,7 @@ PreparedScan BellaAppScanner::Run::prepare(const Bella::ScanRequest &request,
 		callbacks.finalising = [&]
 		{
 			flush();
-			post([](BellaAppScanner &scanner)
+			post([](ScanManager &scanner)
 				 { emit scanner.scanFinalising(); });
 		};
 
@@ -208,12 +208,12 @@ PreparedScan BellaAppScanner::Run::prepare(const Bella::ScanRequest &request,
 		if (result.outcome == Bella::ScanOutcome::Failed)
 			return {{}, result.outcome, result.discoveryComplete, timer.elapsed(), QStringLiteral("The scan stopped. See the Console for details.")};
 
-		QVector<MediaFile> rows;
+		QVector<MediaFileRecord> rows;
 		rows.reserve(result.entries.size());
 		QHash<QString, qsizetype> folderCounts;
 		for (const auto &entry : std::as_const(result.entries))
 		{
-			rows.append(bellaMediaFile(entry));
+			rows.append(mediaFileRecordFromScanEntry(entry));
 			if (!entry.omfEra)
 				++folderCounts[QFileInfo(entry.path).absolutePath()];
 		}
@@ -233,11 +233,11 @@ PreparedScan BellaAppScanner::Run::prepare(const Bella::ScanRequest &request,
 
 // MARK: - Lifecycle
 
-BellaAppScanner::BellaAppScanner(QObject *parent) : QObject(parent)
+ScanManager::ScanManager(QObject *parent) : QObject(parent)
 {
 }
 
-BellaAppScanner::~BellaAppScanner()
+ScanManager::~ScanManager()
 {
 	// A normal Close/Quit has already drained the scan. If an owner disappears
 	// unexpectedly, the worker still owns its control and has a guarded delivery.
@@ -247,7 +247,7 @@ BellaAppScanner::~BellaAppScanner()
 
 // MARK: - Scan locations
 
-std::optional<BellaAppScanner::Location> BellaAppScanner::addedLocation(const QString &path)
+std::optional<ScanManager::Location> ScanManager::addedLocation(const QString &path)
 {
 	if (path.isEmpty())
 		return std::nullopt;
@@ -282,7 +282,7 @@ std::optional<BellaAppScanner::Location> BellaAppScanner::addedLocation(const QS
 	return std::nullopt;
 }
 
-BellaAppScanner::Location BellaAppScanner::rescanLocation(const QString &path)
+ScanManager::Location ScanManager::rescanLocation(const QString &path)
 {
 	QString folder = path.isEmpty() ? QString{} : QDir::cleanPath(QDir::fromNativeSeparators(path));
 	if (AvidMediaLayout::isMxfRoot(folder))
@@ -293,22 +293,17 @@ BellaAppScanner::Location BellaAppScanner::rescanLocation(const QString &path)
 
 // MARK: - Scan control
 
-void BellaAppScanner::startScan(const Options &options)
+void ScanManager::startScan(const Bella::ScanRequest &request)
 {
 	if (isActive())
 		return;
 
-	const QPointer<BellaAppScanner> owner(this);
+	const QPointer<ScanManager> owner(this);
 	std::unique_ptr<QThread> thread;
 	try
 	{
-		Bella::ScanRequest request;
-		request.includeOmf = options.includeOmf;
-		request.includePrecomputeDetails = options.includePrecomputeDetails;
-		request.locations = options.locations;
-
 		const auto run = std::make_shared<Run>();
-		thread.reset(QThread::create([run, owner, request = std::move(request)]
+		thread.reset(QThread::create([run, owner, request]
 									 { run->completion = run->prepare(request, owner); }));
 		auto *worker = thread.get();
 		connect(worker, &QThread::finished, worker, [worker, owner]
@@ -329,7 +324,7 @@ void BellaAppScanner::startScan(const Options &options)
 		finishWhenReady(worker, owner);
 }
 
-bool BellaAppScanner::cancelScan()
+bool ScanManager::cancelScan()
 {
 	if (!isActive() || m_publishing)
 		return false;
@@ -337,14 +332,14 @@ bool BellaAppScanner::cancelScan()
 	return true;
 }
 
-bool BellaAppScanner::isActive() const noexcept
+bool ScanManager::isActive() const noexcept
 {
 	return m_worker || m_publishing;
 }
 
 // MARK: - Completion and reporting
 
-void BellaAppScanner::finishWhenReady(QThread *worker, const QPointer<BellaAppScanner> &owner)
+void ScanManager::finishWhenReady(QThread *worker, const QPointer<ScanManager> &owner)
 {
 	if (!worker->wait(0))
 	{
@@ -358,7 +353,7 @@ void BellaAppScanner::finishWhenReady(QThread *worker, const QPointer<BellaAppSc
 		owner->publishCompletion();
 }
 
-void BellaAppScanner::publishCompletion()
+void ScanManager::publishCompletion()
 {
 	m_publishing = true;
 	const auto run = std::move(m_run);
@@ -387,7 +382,7 @@ void BellaAppScanner::publishCompletion()
 	}
 	const bool cancelled = completion.outcome == Bella::ScanOutcome::Cancelled ||
 						   run->control.cancelled();
-	const QPointer<BellaAppScanner> owner(this);
+	const QPointer<ScanManager> owner(this);
 	try
 	{
 		QString status = QStringLiteral("finished with incomplete discovery");
@@ -426,10 +421,10 @@ void BellaAppScanner::publishCompletion()
 	emit scanFinished(completion.rows, cancelled, completion.discoveryComplete);
 }
 
-void BellaAppScanner::publishFailure(const QString &message)
+void ScanManager::publishFailure(const QString &message)
 {
 	m_publishing = true;
-	const QPointer<BellaAppScanner> owner(this);
+	const QPointer<ScanManager> owner(this);
 	try
 	{
 		publishLog({{QtCriticalMsg, kModule, message}});
@@ -446,7 +441,7 @@ void BellaAppScanner::publishFailure(const QString &message)
 	emit scanFailed(message);
 }
 
-void BellaAppScanner::publishLog(const QVector<LogMessage> &batch)
+void ScanManager::publishLog(const QVector<LogMessage> &batch)
 {
 	for (const auto &message : batch)
 		Diagnostics::appendConsoleLine(message.level, message.module, message.message);

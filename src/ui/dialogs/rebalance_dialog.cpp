@@ -323,7 +323,7 @@ void FolderCard::paintEvent(QPaintEvent *event)
 // MARK: - Construction
 
 RebalanceDialog::RebalanceDialog(const QHash<QString, QString> &mxfRootPathsByLabel,
-								 const QHash<QString, QVector<MediaFile>> &filesByMxfRootPath,
+								 const QHash<QString, QVector<MediaFileRecord>> &filesByMxfRootPath,
 								 const QString &initialLabel, QWidget *parent)
 	: QDialog(parent),
 	  m_mxfRootPathsByLabel(mxfRootPathsByLabel),
@@ -493,7 +493,7 @@ void RebalanceDialog::recomputePlan()
 
 	const QString label = m_volumePicker->currentText();
 	const QString mxfRootPath = m_mxfRootPathsByLabel.value(label);
-	const QVector<MediaFile> files = m_filesByMxfRootPath.value(mxfRootPath);
+	const QVector<MediaFileRecord> files = m_filesByMxfRootPath.value(mxfRootPath);
 
 	// Await the new plan while allowing another volume choice to replace it.
 	m_cardScroll->setEnabled(false);

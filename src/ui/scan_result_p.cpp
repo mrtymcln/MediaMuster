@@ -1,8 +1,8 @@
-#include "bella_media_mapper.h"
+#include "scan_result_p.h"
 
 #include "scanner/audio_format_decoder_p.h"
 #include "scanner/bella_scanner.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "media/omf_uid.h"
 
 #include <QDir>
@@ -21,15 +21,6 @@ namespace
 		if (words.numerator <= 0 || words.denominator <= 0)
 			return std::nullopt;
 		return Bella::TimingRate{quint64(words.numerator), quint64(words.denominator)};
-	}
-
-	std::optional<Bella::TimingRate> videoRate(const std::optional<Bella::MatchFrameRate> &rate)
-	{
-		if (!rate)
-			return std::nullopt;
-		if (rate->meaning == Bella::MatchRateMeaning::AvidExactEditRate)
-			return Bella::interpretAvidEditRate(rate->words.numerator, rate->words.denominator);
-		return positiveRate(rate->words);
 	}
 
 	std::optional<Bella::TimingRate> audioRate(const std::optional<Bella::MatchAudioFrequency> &rate)
@@ -52,12 +43,13 @@ namespace
 	}
 }
 
-// MARK: - File identities and operation safety
+// MARK: - Prepared media record
 
-void applyBellaOperationHandoff(MediaFile &row, const Bella::ScanEntry &entry)
+MediaFileRecord mediaFileRecordFromScanEntry(const Bella::ScanEntry &entry)
 {
+	MediaFileRecord row;
 	const QFileInfo file(entry.path);
-	const auto &metadata = entry.match.metadata;
+	const auto &metadata = entry.metadata;
 	row.mediaFilePath = entry.path;
 	row.fileName = file.fileName();
 	row.mediaFolderName = file.dir().dirName();
@@ -92,14 +84,7 @@ void applyBellaOperationHandoff(MediaFile &row, const Bella::ScanEntry &entry)
 	}
 	// A physical-only instruction is an explicit empty receipt.
 	row.operationScanReceipt = std::move(receipt);
-}
 
-// MARK: - Prepared media row
-
-MediaFile bellaMediaFile(const Bella::ScanEntry &entry)
-{
-	MediaFile row;
-	applyBellaOperationHandoff(row, entry);
 	row.kelpieId = entry.kelpieId;
 	row.created = entry.created;
 	row.volumeName = entry.volumeName;
@@ -110,7 +95,6 @@ MediaFile bellaMediaFile(const Bella::ScanEntry &entry)
 									[&](QChar c)
 									{ return !allowed.contains(c); });
 
-	const auto &metadata = entry.match.metadata;
 	row.project = metadata.project;
 	row.originalBin = metadata.originalBin;
 	row.compression = metadata.compression.compressionName;
@@ -121,10 +105,10 @@ MediaFile bellaMediaFile(const Bella::ScanEntry &entry)
 	case Bella::MatchKind::Unknown:
 		break;
 	case Bella::MatchKind::Audio:
-		row.kind = MediaFile::Kind::Audio;
+		row.kind = MediaFileRecord::Kind::Audio;
 		break;
 	case Bella::MatchKind::Video:
-		row.kind = MediaFile::Kind::Video;
+		row.kind = MediaFileRecord::Kind::Video;
 		break;
 	}
 	switch (metadata.type)
@@ -132,10 +116,10 @@ MediaFile bellaMediaFile(const Bella::ScanEntry &entry)
 	case Bella::MatchType::Unknown:
 		break;
 	case Bella::MatchType::Media:
-		row.type = MediaFile::Type::Media;
+		row.type = MediaFileRecord::Type::Media;
 		break;
 	case Bella::MatchType::Precompute:
-		row.type = MediaFile::Type::Precompute;
+		row.type = MediaFileRecord::Type::Precompute;
 		break;
 	}
 	switch (metadata.precomputeCategory)
@@ -143,25 +127,25 @@ MediaFile bellaMediaFile(const Bella::ScanEntry &entry)
 	case Bella::MatchPrecomputeCategory::Unknown:
 		break;
 	case Bella::MatchPrecomputeCategory::RenderedEffects:
-		row.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+		row.precomputeCategory = MediaFileRecord::PrecomputeCategory::RenderedEffects;
 		break;
 	case Bella::MatchPrecomputeCategory::TitlesAndMatteKeys:
-		row.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
+		row.precomputeCategory = MediaFileRecord::PrecomputeCategory::TitlesAndMatteKeys;
 		break;
 	}
-	switch (entry.match.localReference)
+	switch (entry.localReference)
 	{
 	case Bella::LocalReference::Unresolved:
-		row.dbStatus = MediaFile::DbStatus::DbUnreadable;
+		row.dbStatus = MediaFileRecord::DbStatus::DbUnreadable;
 		break;
 	case Bella::LocalReference::Listed:
-		row.dbStatus = MediaFile::DbStatus::Listed;
+		row.dbStatus = MediaFileRecord::DbStatus::Listed;
 		break;
 	case Bella::LocalReference::NoReference:
-		row.dbStatus = MediaFile::DbStatus::NoReference;
+		row.dbStatus = MediaFileRecord::DbStatus::NoReference;
 		break;
 	case Bella::LocalReference::NoDatabase:
-		row.dbStatus = MediaFile::DbStatus::NoDatabase;
+		row.dbStatus = MediaFileRecord::DbStatus::NoDatabase;
 		break;
 	}
 
@@ -171,7 +155,7 @@ MediaFile bellaMediaFile(const Bella::ScanEntry &entry)
 	values.sampleRate = metadata.sampleRate;
 	values.bitDepth = metadata.bitDepth;
 	values.timing = metadata.timing;
-	values.frameRateValue = videoRate(values.frameRate);
+	values.frameRateValue = metadata.exactFrameRate;
 	values.sampleRateValue = audioRate(values.sampleRate);
 	if (values.timing.duration && values.timing.display)
 	{

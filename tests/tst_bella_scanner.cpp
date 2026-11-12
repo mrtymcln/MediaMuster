@@ -614,9 +614,8 @@ void TestBellaScanner::matchesAfterHeader()
 	const auto &entry = result.entries[0];
 	QCOMPARE(entry.path, path);
 	QCOMPARE(entry.sizeBytes, std::optional<qint64>(original.size()));
-	QCOMPARE(entry.match.localReference, Bella::LocalReference::NoDatabase);
-	QVERIFY(!entry.match.needsHeader);
-	const auto &metadata = entry.match.metadata;
+	QCOMPARE(entry.localReference, Bella::LocalReference::NoDatabase);
+	const auto &metadata = entry.metadata;
 	if (replace)
 	{
 		const auto *reason = std::get_if<Bella::RescanReason>(&entry.operationSafety);
@@ -712,13 +711,12 @@ void TestBellaScanner::operationFileIdOrigin()
 	QCOMPARE(result.entries.size(), qsizetype(1));
 	const auto &entry = result.entries.first();
 	QCOMPARE(entry.path, path);
-	QCOMPARE(entry.match.localReference, Bella::LocalReference::Listed);
+	QCOMPARE(entry.localReference, Bella::LocalReference::Listed);
 	const auto expectedId = zeroId ? QByteArray(32, '\0') : QByteArray::fromHex("060a2b340101010101010f00130000000b00000084030000060e2b347f7f2a80");
-	QVERIFY(entry.match.metadata.fileMobId);
-	QCOMPARE(entry.match.metadata.fileMobId->bytes().toByteArray(), expectedId);
+	QVERIFY(entry.metadata.fileMobId);
+	QCOMPARE(entry.metadata.fileMobId->bytes().toByteArray(), expectedId);
 	if (headerWithoutId)
 	{
-		QVERIFY(!entry.match.needsHeader);
 		QVERIFY(std::any_of(result.problems.cbegin(), result.problems.cend(), [&](const auto &problem)
 							{ return problem.path == path && problem.reason.contains(QStringLiteral("physical file identity")); }));
 	}
@@ -766,9 +764,8 @@ void TestBellaScanner::unconfirmedPhysicalFileIsKept()
 	const auto *reason = std::get_if<Bella::RescanReason>(&entry.operationSafety);
 	QVERIFY(reason);
 	QCOMPARE(*reason, Bella::RescanReason::FilePresenceUnconfirmed);
-	QCOMPARE(entry.match.localReference, Bella::LocalReference::Unresolved);
-	QVERIFY(!entry.match.needsHeader);
-	QVERIFY(!entry.match.metadata.timing.duration);
+	QCOMPARE(entry.localReference, Bella::LocalReference::Unresolved);
+	QVERIFY(!entry.metadata.timing.duration);
 	QVERIFY(std::any_of(result.problems.cbegin(), result.problems.cend(), [&](const auto &problem)
 						{ return problem.path == path && problem.reason.contains(QStringLiteral("could not confirm"), Qt::CaseInsensitive); }));
 }
@@ -809,11 +806,9 @@ void TestBellaScanner::cancelKeepsKnownUnreadDatabase()
 	QVERIFY(absent);
 	QVERIFY(std::holds_alternative<Bella::CheckPhysicalFile>(known->operationSafety));
 	QVERIFY(std::holds_alternative<Bella::CheckPhysicalFile>(absent->operationSafety));
-	QCOMPARE(known->match.localReference, Bella::LocalReference::Unresolved);
-	QCOMPARE(absent->match.localReference, Bella::LocalReference::NoDatabase);
-	QVERIFY(!known->match.metadata.fileMobId);
-	QVERIFY(!known->match.needsHeader);
-	QVERIFY(!absent->match.needsHeader);
+	QCOMPARE(known->localReference, Bella::LocalReference::Unresolved);
+	QCOMPARE(absent->localReference, Bella::LocalReference::NoDatabase);
+	QVERIFY(!known->metadata.fileMobId);
 }
 
 void TestBellaScanner::discoveryCallbackFailureIsIncomplete()

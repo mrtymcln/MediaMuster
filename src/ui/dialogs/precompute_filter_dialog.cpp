@@ -28,7 +28,7 @@ namespace
 
 // MARK: - Construction
 
-PrecomputeFilterDialog::PrecomputeFilterDialog(const QVector<MediaFile> &files,
+PrecomputeFilterDialog::PrecomputeFilterDialog(const QVector<MediaFileRecord> &files,
 											   const PrecomputeFilter &selection, const QString &selectedVolume, QWidget *parent)
 	: QDialog(parent)
 {
@@ -140,7 +140,7 @@ QTreeWidgetItem *PrecomputeFilterDialog::addChoice(QTreeWidgetItem *parent, cons
 	return item;
 }
 
-void PrecomputeFilterDialog::buildTree(const QVector<MediaFile> &files)
+void PrecomputeFilterDialog::buildTree(const QVector<MediaFileRecord> &files)
 {
 	const QSignalBlocker blocker(m_tree);
 	auto *root = addChoice(nullptr, tr("Precomputes"), {});
@@ -154,7 +154,7 @@ void PrecomputeFilterDialog::buildTree(const QVector<MediaFile> &files)
 	QMap<QString, QMap<QString, QMap<QString, QTreeWidgetItem *>>> effects;
 	for (const auto &file : files)
 	{
-		if (file.type != MediaFile::Type::Precompute)
+		if (file.type != MediaFileRecord::Type::Precompute)
 			continue;
 		const QString precomputeCategory = file.precomputeCategoryFilterLabel();
 		const QString category = precomputeCategory == rendered ? file.effectCategoryDisplay() : QString{};

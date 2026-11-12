@@ -1,6 +1,6 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "ui/precompute_filter.h"
 
 #include <QDialog>
@@ -20,7 +20,7 @@ class PrecomputeFilterDialog : public QDialog
 {
 	Q_OBJECT
 public:
-	explicit PrecomputeFilterDialog(const QVector<MediaFile> &files,
+	explicit PrecomputeFilterDialog(const QVector<MediaFileRecord> &files,
 									const PrecomputeFilter &selection, const QString &selectedVolume,
 									QWidget *parent = nullptr);
 
@@ -30,7 +30,6 @@ public:
 	QString selectedVolume() const;
 
 private:
-
 	// MARK: - Choice tree and matching counts
 
 	struct Counts
@@ -39,7 +38,7 @@ private:
 		QHash<QString, qint64> volumes;
 	};
 
-	void buildTree(const QVector<MediaFile> &files);
+	void buildTree(const QVector<MediaFileRecord> &files);
 	QTreeWidgetItem *addChoice(QTreeWidgetItem *parent, const QString &label,
 							   const PrecomputeFilterPath &path);
 	void applySelection(const PrecomputeFilter &selection);

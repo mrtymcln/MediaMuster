@@ -1,11 +1,11 @@
 // Table row notifications, Bella display values and transfer safety.
 
 #include "scanner/bella_scanner.h"
-#include "media/bella_media_mapper.h"
 #include "support/enum_util.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "media/media_csv.h"
 #include "ui/media_table_model.h"
+#include "ui/scan_result_p.h"
 #include "operations/operation_request.h"
 #include "media/mob_id_text.h"
 #include "storage/volume_identity.h"
@@ -33,9 +33,9 @@ namespace
 			"060a2b340101010501010f1013000000443322116655887799aabbccddeeff00"));
 	}
 
-	MediaFile row(const QString &path = QStringLiteral("/media/clip.mxf"))
+	MediaFileRecord row(const QString &path = QStringLiteral("/media/clip.mxf"))
 	{
-		MediaFile file;
+		MediaFileRecord file;
 		file.mediaFilePath = path;
 		file.masterMobId = masterId();
 		return file;
@@ -97,21 +97,21 @@ private slots:
 	void selected_master_reaches_table();
 
 private:
-	/// Build `n` MediaFiles with sequential filePaths, nothing else.
-	static QVector<MediaFile> makeRows(int n);
+	/// Build `n` media file records with sequential paths.
+	static QVector<MediaFileRecord> makeRows(int n);
 	/// filePaths from the model in current order.
 	static QStringList pathsOf(const MediaTableModel &m);
 };
 
 // MARK: - Test cases
 
-QVector<MediaFile> TestMediaTableModel::makeRows(int n)
+QVector<MediaFileRecord> TestMediaTableModel::makeRows(int n)
 {
-	QVector<MediaFile> v;
+	QVector<MediaFileRecord> v;
 	v.reserve(n);
 	for (int i = 0; i < n; ++i)
 	{
-		MediaFile mf;
+		MediaFileRecord mf;
 		mf.mediaFilePath = QStringLiteral("/fake/row%1.mxf").arg(i);
 		v.push_back(std::move(mf));
 	}
@@ -194,7 +194,7 @@ void TestMediaTableModel::row_removal_preserves_rows_and_notifications()
 
 void TestMediaTableModel::location_cell_shows_the_full_path()
 {
-	MediaFile f;
+	MediaFileRecord f;
 	f.fileName = QStringLiteral("V01.abc.mxf");
 	f.volumeName = QStringLiteral("EDIT");
 	f.mediaFolderName = QStringLiteral("8646");
@@ -248,13 +248,13 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 		entry.volumeIdentifier = VolumeIdentity::capture(path).identifier();
 		entry.sizeBytes = info.size();
 		entry.modified = info.lastModified();
-		entry.match.localReference = Bella::LocalReference::Listed;
-		entry.match.metadata.fileMobId = fileMobId;
-		entry.match.metadata.masterMobId = masterMobId;
-		entry.match.metadata.compression.compressionName = QStringLiteral("DNx HQX");
-		entry.match.metadata.bitDepth.bits = 10;
+		entry.localReference = Bella::LocalReference::Listed;
+		entry.metadata.fileMobId = fileMobId;
+		entry.metadata.masterMobId = masterMobId;
+		entry.metadata.compression.compressionName = QStringLiteral("DNx HQX");
+		entry.metadata.bitDepth.bits = 10;
 		entry.operationSafety = safety;
-		return bellaMediaFile(entry);
+		return mediaFileRecordFromScanEntry(entry);
 	};
 	const auto fileIdOrigin = headerSkipped ? Bella::FileIdOrigin::Database : Bella::FileIdOrigin::Header;
 	const auto originalRow = makeScannedRow(original, selectedId(), selectedId(), Bella::VerifyFileId{selectedId(), fileIdOrigin});
@@ -289,12 +289,12 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QCOMPARE(model.allFiles()[0].masterMobId, model.fileAt(copyIndex).masterMobId);
 	QCOMPARE(model.allFiles()[0].mediaFilePath, original);
 	QCOMPARE(model.fileAt(copyIndex).mediaFilePath, copy);
-	QCOMPARE(model.fileAt(copyIndex).dbStatus, MediaFile::DbStatus::NoDatabase);
+	QCOMPARE(model.fileAt(copyIndex).dbStatus, MediaFileRecord::DbStatus::NoDatabase);
 	QCOMPARE(model.index(copyIndex, int(MediaTableModel::Column::NoDatabase)).data().toString(), QStringLiteral("true"));
 	QCOMPARE(model.index(copyIndex, int(MediaTableModel::Column::NoReference)).data().toString(), QStringLiteral("false"));
 	QVERIFY(!put("future.pmr").isEmpty()); // Presence cannot prove membership without parsing this database.
 	model.applyTransfer(original, moved, false);
-	QCOMPARE(model.allFiles()[0].dbStatus, MediaFile::DbStatus::DbUnreadable);
+	QCOMPARE(model.allFiles()[0].dbStatus, MediaFileRecord::DbStatus::DbUnreadable);
 	QVERIFY(noDatabase.isValid());
 	QVERIFY(noReference.isValid());
 	QCOMPARE(noDatabase.data().toString(), QStringLiteral("true"));
@@ -305,7 +305,7 @@ void TestMediaTableModel::physical_row_ids_survive_moves_and_separate_copies()
 	QCOMPARE(model.allFiles()[0].mediaFilePath, moved);
 	QCOMPARE(model.fileAt(neighborIndex).kelpieId, neighborId);
 	QCOMPARE(model.fileAt(neighborIndex).mediaFilePath, neighbor);
-	QCOMPARE(model.fileAt(neighborIndex).dbStatus, MediaFile::DbStatus::Listed);
+	QCOMPARE(model.fileAt(neighborIndex).dbStatus, MediaFileRecord::DbStatus::Listed);
 	const std::array expectedRows{&originalRow, &neighborRow, &originalRow};
 	for (std::size_t index = 0; index < expectedRows.size(); ++index)
 	{
@@ -349,7 +349,7 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 {
 	MediaTableModel model;
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
-	MediaFile file = row();
+	MediaFileRecord file = row();
 	file.omfEra = true;
 	file.bellaValues.emplace().durationTimecode = {0, 0, 0, 19};
 	model.setMediaFiles({file});
@@ -380,11 +380,11 @@ void TestMediaTableModel::omf_gate_preserves_optional_column_indexes()
 
 void TestMediaTableModel::unknown_created_date_displays_blank()
 {
-	MediaFile withDate;
+	MediaFileRecord withDate;
 	withDate.mediaFilePath = QStringLiteral("/vol/a.mxf");
 	withDate.created = QDateTime(QDate(2026, 7, 20), QTime(12, 30));
 
-	MediaFile withoutDate;
+	MediaFileRecord withoutDate;
 	withoutDate.mediaFilePath = QStringLiteral("/vol/b.mxf");
 	withoutDate.modified = QDateTime(QDate(2026, 7, 21), QTime(9, 45));
 	// created left invalid — a filesystem that records no birth time.
@@ -406,20 +406,20 @@ void TestMediaTableModel::unknown_created_date_displays_blank()
 // Project availability remains independent of database membership.
 void TestMediaTableModel::status_words_come_from_one_table()
 {
-	using DbStatus = MediaFile::DbStatus;
+	using DbStatus = MediaFileRecord::DbStatus;
 	for (DbStatus s : {DbStatus::Listed, DbStatus::NoReference, DbStatus::NoDatabase, DbStatus::DbUnreadable})
 	{
-		const auto text = MediaFile::dbStatusText(s);
+		const auto text = MediaFileRecord::dbStatusText(s);
 		QVERIFY2(!text.label.isEmpty(), "every status has a label for its explanation");
 		QCOMPARE(text.why.isEmpty(), s == DbStatus::Listed); // only Listed needs no explanation
 	}
-	QCOMPARE(MediaFile::dbStatusText(DbStatus::NoDatabase).label,
-			 MediaFile::dbStatusText(DbStatus::DbUnreadable).label); // one tab
-	QVERIFY(MediaFile::dbStatusText(DbStatus::NoDatabase).why !=
-			MediaFile::dbStatusText(DbStatus::DbUnreadable).why); // two reasons
-	QCOMPARE(MediaFile::dbStatusText(DbStatus::NoReference).label, QStringLiteral("No Reference"));
+	QCOMPARE(MediaFileRecord::dbStatusText(DbStatus::NoDatabase).label,
+			 MediaFileRecord::dbStatusText(DbStatus::DbUnreadable).label); // one tab
+	QVERIFY(MediaFileRecord::dbStatusText(DbStatus::NoDatabase).why !=
+			MediaFileRecord::dbStatusText(DbStatus::DbUnreadable).why); // two reasons
+	QCOMPARE(MediaFileRecord::dbStatusText(DbStatus::NoReference).label, QStringLiteral("No Reference"));
 
-	MediaFile f;
+	MediaFileRecord f;
 	QCOMPARE(f.dbStatus, DbStatus::Listed);
 	QVERIFY(!f.isNoDatabase());
 	f.dbStatus = DbStatus::DbUnreadable;
@@ -434,33 +434,33 @@ void TestMediaTableModel::status_words_come_from_one_table()
 	QCOMPARE(f.projectDisplay(), QStringLiteral("Tëst"));
 
 	MediaTableModel m;
-	MediaFile unlisted;
+	MediaFileRecord unlisted;
 	unlisted.dbStatus = DbStatus::NoReference;
 	m.setMediaFiles({unlisted});
 	const int col = int(MediaTableModel::Column::Project);
 	QCOMPARE(m.index(0, col).data(Qt::DisplayRole).toString(), QStringLiteral("No project"));
 	const QString tip = m.index(0, col).data(Qt::ToolTipRole).toString();
-	QVERIFY(tip.contains(MediaFile::noProjectWhy()));
-	QVERIFY(tip.contains(MediaFile::dbStatusText(DbStatus::NoReference).why));
+	QVERIFY(tip.contains(MediaFileRecord::noProjectWhy()));
+	QVERIFY(tip.contains(MediaFileRecord::dbStatusText(DbStatus::NoReference).why));
 }
 
 void TestMediaTableModel::database_columns_show_the_compact_result_data()
 {
-	QTest::addColumn<MediaFile::DbStatus>("status");
+	QTest::addColumn<MediaFileRecord::DbStatus>("status");
 	QTest::addColumn<bool>("noDatabase");
 	QTest::addColumn<bool>("noReference");
-	QTest::newRow("listed") << MediaFile::DbStatus::Listed << false << false;
-	QTest::newRow("checked-missing-reference") << MediaFile::DbStatus::NoReference << false << true;
-	QTest::newRow("no-local-databases") << MediaFile::DbStatus::NoDatabase << true << false;
-	QTest::newRow("unresolved-local-checks") << MediaFile::DbStatus::DbUnreadable << true << false;
+	QTest::newRow("listed") << MediaFileRecord::DbStatus::Listed << false << false;
+	QTest::newRow("checked-missing-reference") << MediaFileRecord::DbStatus::NoReference << false << true;
+	QTest::newRow("no-local-databases") << MediaFileRecord::DbStatus::NoDatabase << true << false;
+	QTest::newRow("unresolved-local-checks") << MediaFileRecord::DbStatus::DbUnreadable << true << false;
 }
 
 void TestMediaTableModel::database_columns_show_the_compact_result()
 {
-	QFETCH(MediaFile::DbStatus, status);
+	QFETCH(MediaFileRecord::DbStatus, status);
 	QFETCH(bool, noDatabase);
 	QFETCH(bool, noReference);
-	MediaFile file = row();
+	MediaFileRecord file = row();
 	file.dbStatus = status;
 	MediaTableModel model;
 	QAbstractItemModelTester tester(&model, QAbstractItemModelTester::FailureReportingMode::QtTest);
@@ -493,7 +493,7 @@ void TestMediaTableModel::database_columns_show_the_compact_result()
 			const QString referenceTip = reference.data(Qt::ToolTipRole).toString();
 			QVERIFY(!databaseTip.isEmpty());
 			QVERIFY(!referenceTip.isEmpty());
-			if (status != MediaFile::DbStatus::Listed)
+			if (status != MediaFileRecord::DbStatus::Listed)
 			{
 				QVERIFY(databaseTip.contains(file.dbStatusText().why));
 				QVERIFY(referenceTip.contains(file.dbStatusText().why));
@@ -507,18 +507,18 @@ void TestMediaTableModel::database_columns_show_the_compact_result()
 void TestMediaTableModel::unknown_classification_displays_without_guessing()
 {
 	// Known numeric values are stable for existing consumers.
-	static_assert(int(MediaFile::Kind::Video) == 0 && int(MediaFile::Kind::Audio) == 1);
-	static_assert(int(MediaFile::Type::Media) == 0 && int(MediaFile::Type::Precompute) == 1);
-	MediaFile unknown;
-	QCOMPARE(unknown.kind, MediaFile::Kind::Unknown);
-	QCOMPARE(unknown.type, MediaFile::Type::Unknown);
+	static_assert(int(MediaFileRecord::Kind::Video) == 0 && int(MediaFileRecord::Kind::Audio) == 1);
+	static_assert(int(MediaFileRecord::Type::Media) == 0 && int(MediaFileRecord::Type::Precompute) == 1);
+	MediaFileRecord unknown;
+	QCOMPARE(unknown.kind, MediaFileRecord::Kind::Unknown);
+	QCOMPARE(unknown.type, MediaFileRecord::Type::Unknown);
 
-	MediaFile video;
-	video.kind = MediaFile::Kind::Video;
-	video.type = MediaFile::Type::Media;
-	MediaFile audio;
-	audio.kind = MediaFile::Kind::Audio;
-	audio.type = MediaFile::Type::Precompute;
+	MediaFileRecord video;
+	video.kind = MediaFileRecord::Kind::Video;
+	video.type = MediaFileRecord::Type::Media;
+	MediaFileRecord audio;
+	audio.kind = MediaFileRecord::Kind::Audio;
+	audio.type = MediaFileRecord::Type::Precompute;
 	MediaTableModel model;
 	model.setMediaFiles({unknown, video, audio});
 	const int kind = int(MediaTableModel::Column::Kind);
@@ -584,15 +584,15 @@ void TestMediaTableModel::precomputes_gate_preserves_rows_and_existing_indexes()
 
 void TestMediaTableModel::effect_columns_only_display_precompute_details()
 {
-	MediaFile precompute;
-	precompute.type = MediaFile::Type::Precompute;
-	precompute.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+	MediaFileRecord precompute;
+	precompute.type = MediaFileRecord::Type::Precompute;
+	precompute.precomputeCategory = MediaFileRecord::PrecomputeCategory::RenderedEffects;
 	precompute.effect = QStringLiteral("3D Warp");
 	precompute.effectCategory = QStringLiteral("Blend");
-	MediaFile media = precompute;
-	media.type = MediaFile::Type::Media;
-	MediaFile unknown = precompute;
-	unknown.type = MediaFile::Type::Unknown;
+	MediaFileRecord media = precompute;
+	media.type = MediaFileRecord::Type::Media;
+	MediaFileRecord unknown = precompute;
+	unknown.type = MediaFileRecord::Type::Unknown;
 	MediaTableModel model;
 	model.setMediaFiles({precompute, media, unknown});
 	model.setPrecomputesEnabled(true);
@@ -612,12 +612,12 @@ void TestMediaTableModel::effect_columns_only_display_precompute_details()
 
 void TestMediaTableModel::precompute_categories_and_unknown_effects_display_consistently()
 {
-	MediaFile rendered, title, unknown;
-	rendered.type = title.type = unknown.type = MediaFile::Type::Precompute;
-	rendered.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
-	title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
+	MediaFileRecord rendered, title, unknown;
+	rendered.type = title.type = unknown.type = MediaFileRecord::Type::Precompute;
+	rendered.precomputeCategory = MediaFileRecord::PrecomputeCategory::RenderedEffects;
+	title.precomputeCategory = MediaFileRecord::PrecomputeCategory::TitlesAndMatteKeys;
 	MediaTableModel model;
-	model.setMediaFiles({rendered, title, unknown, MediaFile{}});
+	model.setMediaFiles({rendered, title, unknown, MediaFileRecord{}});
 	model.setPrecomputesEnabled(true);
 	const int category = int(MediaTableModel::Column::PrecomputeCategory);
 	QCOMPARE(model.index(0, category).data().toString(), QStringLiteral("Rendered Effects"));
@@ -636,19 +636,19 @@ void TestMediaTableModel::prepared_metadata_reaches_table_cells()
 	Bella::ScanEntry entry;
 	entry.kelpieId = 91;
 	entry.path = QStringLiteral("/media/clip.mxf");
-	entry.match.localReference = Bella::LocalReference::NoReference;
-	entry.match.metadata.type = Bella::MatchType::Precompute;
-	entry.match.metadata.clipName = QStringLiteral("Sequence,3D_Warp+1");
-	entry.match.metadata.originalBin = QStringLiteral("MDB bin");
-	entry.match.metadata.effects = {QStringLiteral("3D Warp"), QStringLiteral("Blend")};
-	const auto file = bellaMediaFile(entry);
+	entry.localReference = Bella::LocalReference::NoReference;
+	entry.metadata.type = Bella::MatchType::Precompute;
+	entry.metadata.clipName = QStringLiteral("Sequence,3D_Warp+1");
+	entry.metadata.originalBin = QStringLiteral("MDB bin");
+	entry.metadata.effects = {QStringLiteral("3D Warp"), QStringLiteral("Blend")};
+	const auto file = mediaFileRecordFromScanEntry(entry);
 	MediaTableModel model;
 	model.setPrecomputesEnabled(true);
 	model.setMediaFiles({file});
 	const auto &current = model.fileAt(0);
 	QCOMPARE(current.kelpieId, entry.kelpieId);
-	QCOMPARE(current.type, MediaFile::Type::Precompute);
-	QCOMPARE(current.dbStatus, MediaFile::DbStatus::NoReference);
+	QCOMPARE(current.type, MediaFileRecord::Type::Precompute);
+	QCOMPARE(current.dbStatus, MediaFileRecord::DbStatus::NoReference);
 	QCOMPARE(current.clipName, QStringLiteral("Sequence,3D_Warp+1"));
 	QCOMPARE(current.originalBin, QStringLiteral("MDB bin"));
 	QCOMPARE(current.effect, QStringLiteral("3D Warp"));
@@ -663,8 +663,8 @@ void TestMediaTableModel::selected_master_reaches_table()
 {
 	Bella::ScanEntry entry;
 	entry.path = QStringLiteral("/media/clip.mxf");
-	entry.match.metadata.masterMobId = selectedId();
-	const auto file = bellaMediaFile(entry);
+	entry.metadata.masterMobId = selectedId();
+	const auto file = mediaFileRecordFromScanEntry(entry);
 	MediaTableModel model;
 	model.setMediaFiles({file});
 	const auto &current = model.fileAt(0);

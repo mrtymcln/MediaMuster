@@ -1,5 +1,5 @@
 #include "operations/rebalance_planner.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "media/media_evidence.h"
 #include "operations/operation_request.h"
 #include "media/mob_id_text.h"
@@ -57,8 +57,8 @@ private:
 	static void makeFillers(const QString &mxfRootPath, const QString &mediaFolderName, int fillerCount);
 
 	/// Creates one sparse file under <mxfRootPath>/<mediaFolderName>/<name>
-	/// and returns a MediaFile pointing at it.
-	static MediaFile makeMxf(const QString &mxfRootPath, const QString &mediaFolderName, const QString &name,
+	/// and returns a MediaFileRecord pointing at it.
+	static MediaFileRecord makeMxf(const QString &mxfRootPath, const QString &mediaFolderName, const QString &name,
 							 const QString &masterMobId = {}, qint64 sizeBytes = 1000);
 
 	/// Counts ops with this src-to-dest folder pair.
@@ -91,7 +91,7 @@ void TestRebalancePlanner::makeFillers(const QString &mxfRootPath, const QString
 	}
 }
 
-MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRootPath, const QString &mediaFolderName,
+MediaFileRecord TestRebalancePlanner::makeMxf(const QString &mxfRootPath, const QString &mediaFolderName,
 										const QString &name, const QString &masterMobId,
 										qint64 sizeBytes)
 {
@@ -105,7 +105,7 @@ MediaFile TestRebalancePlanner::makeMxf(const QString &mxfRootPath, const QStrin
 		qFatal("Cannot stage test media %s: %s", qPrintable(path), qPrintable(f.errorString()));
 	f.close();
 
-	MediaFile mf;
+	MediaFileRecord mf;
 	mf.mediaFilePath = path;
 	mf.mediaFolderName = mediaFolderName;
 	mf.masterMobId = masterMobId.isEmpty() ? QString()
@@ -192,7 +192,7 @@ void TestRebalancePlanner::noop_when_already_balanced()
 	const QString root = stageMxfRoot(tmp);
 
 	// Three files in "1", one relatives group, all already home.
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "1", "a.mxf", "C1"),
 		makeMxf(root, "1", "b.mxf", "C1"),
 		makeMxf(root, "1", "c.mxf", "C1"),
@@ -210,7 +210,7 @@ void TestRebalancePlanner::consolidates_relatives_into_home_folder()
 	const QString root = stageMxfRoot(tmp);
 
 	// Folder '1' is this group's lowest-numbered home; the file in '2' moves there.
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "1", "a.mxf", "C1"),
 		makeMxf(root, "1", "b.mxf", "C1"),
 		makeMxf(root, "2", "c.mxf", "C1"),
@@ -229,7 +229,7 @@ void TestRebalancePlanner::quarantined_folder_left_alone()
 	const QString root = stageMxfRoot(tmp);
 
 	makeFillers(root, "Quarantined Files", 3);
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "1", "a.mxf"),
 		makeMxf(root, "1", "b.mxf"),
 	};
@@ -258,7 +258,7 @@ void TestRebalancePlanner::folder_count_excludes_databases_and_hidden_files()
 	const QString root = stageMxfRoot(tmp);
 
 	// Only the two visible .mxf files count, including when a hidden sidecar ends in .mxf.
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "1", "a.mxf"),
 		makeMxf(root, "1", "b.MXF"),
 	};
@@ -334,7 +334,7 @@ void TestRebalancePlanner::unreadable_folder_is_not_counted_or_planned()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "1", "a.mxf", "C1"),
 		makeMxf(root, "2", "b.mxf", "C1")};
 	const QString folder = QDir(root).filePath(QStringLiteral("1"));
@@ -400,7 +400,7 @@ void TestRebalancePlanner::home_full_falls_back_to_existing_folder()
 	// additional slot is needed to reunite the group there.
 	makeFillers(root, "1", 4999);
 	makeFillers(root, "2", destinationFillers);
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "1", "home_member.mxf", "C1"),
 		makeMxf(root, "2", "stray_a.mxf", "C1"),
 		makeMxf(root, "2", "stray_b.mxf", "C1"),
@@ -434,7 +434,7 @@ void TestRebalancePlanner::same_master_never_crosses_workstation_prefix()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
-	const QVector<MediaFile> files{
+	const QVector<MediaFileRecord> files{
 		makeMxf(root, "Mac.1", "a.mxf", "same"), makeMxf(root, "Mac.2", "b.mxf", "same"),
 		makeMxf(root, "PC.1", "c.mxf", "same"), makeMxf(root, "PC.2", "d.mxf", "same")};
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
@@ -446,7 +446,7 @@ void TestRebalancePlanner::exactly_5000_relatives_are_stable()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
-	QVector<MediaFile> files;
+	QVector<MediaFileRecord> files;
 	for (int n = 0; n < 5000; ++n)
 		files.append(makeMxf(root, "1", QString::number(n) + ".mxf", "same", 0));
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
@@ -458,7 +458,7 @@ void TestRebalancePlanner::over_5000_relatives_split_across_new_folders()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const auto root = stageMxfRoot(tmp);
-	QVector<MediaFile> files;
+	QVector<MediaFileRecord> files;
 	for (int n = 0; n < 5001; ++n)
 		files.append(makeMxf(root, "Ingest1.32", QString::number(n) + ".mxf", "same", 0));
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
@@ -479,7 +479,7 @@ void TestRebalancePlanner::oversized_packed_relatives_are_stable()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
-	QVector<MediaFile> files;
+	QVector<MediaFileRecord> files;
 	for (int n = 0; n < 5001; ++n)
 		files.append(makeMxf(root, n < 5000 ? "1" : "2", QString::number(n) + ".mxf", "same", 0));
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
@@ -490,7 +490,7 @@ void TestRebalancePlanner::invalid_master_ids_are_independent()
 {
 	QTemporaryDir tmp;
 	const auto root = stageMxfRoot(tmp);
-	QVector<MediaFile> files{makeMxf(root, "1", "a.mxf"), makeMxf(root, "2", "b.mxf")};
+	QVector<MediaFileRecord> files{makeMxf(root, "1", "a.mxf"), makeMxf(root, "2", "b.mxf")};
 	for (const auto &id :
 		 {QString("0000000000000000.0000000000000000.0000000000000000.0000000000000000"),
 		  QString("invalid")})
@@ -528,9 +528,9 @@ void TestRebalancePlanner::eligibility_excludes_legacy_loose_and_quarantined()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString root = stageMxfRoot(tmp);
-	const MediaFile home = makeMxf(root, "1", "home.mxf", "same");
+	const MediaFileRecord home = makeMxf(root, "1", "home.mxf", "same");
 	QVERIFY(RebalancePlanner::isEligible(home));
-	QVector<MediaFile> excluded;
+	QVector<MediaFileRecord> excluded;
 	for (const auto &name : {"legacy.omf", "sound.wav", "sound.aif", "sound.aiff", "notes.txt"})
 		excluded.append(makeMxf(root, "2", QLatin1String(name), "same"));
 	auto legacy = makeMxf(root, "2", "legacy.mxf", "same");
@@ -554,7 +554,7 @@ void TestRebalancePlanner::bare_mxf_root_is_excluded()
 	QTemporaryDir tmp;
 	QVERIFY(tmp.isValid());
 	const QString root = tmp.path() + "/MXF";
-	const QVector<MediaFile> files{makeMxf(root, "1", "home.mxf", "same"),
+	const QVector<MediaFileRecord> files{makeMxf(root, "1", "home.mxf", "same"),
 								   makeMxf(root, "2", "stray.mxf", "same")};
 	const auto plan = RebalancePlanner::computePlan(root, "Test", files);
 	QVERIFY(plan.ops.isEmpty());

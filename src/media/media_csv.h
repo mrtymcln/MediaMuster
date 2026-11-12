@@ -1,6 +1,6 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 
 #include <QString>
 #include <QVector>
@@ -21,9 +21,9 @@ namespace MediaCsv
 
 	/// One CSV record, including its terminal newline. Quotes and neutralises free-text fields;
 	/// uses the same display values as the table.
-	QString rowLine(const MediaFile &f, Options options = {});
+	QString rowLine(const MediaFileRecord &f, Options options = {});
 
 	/// Writes and commits the file; false on I/O failure.
 	/// Includes a UTF-8 BOM so Excel recognises non-Latin names.
-	bool write(const QString &path, const QVector<MediaFile> &rows, Options options = {});
+	bool write(const QString &path, const QVector<MediaFileRecord> &rows, Options options = {});
 } // namespace MediaCsv

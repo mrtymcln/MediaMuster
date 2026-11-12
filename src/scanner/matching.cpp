@@ -22,6 +22,15 @@ namespace Bella
 		{
 			return same(a.words, b.words) && a.meaning == b.meaning;
 		}
+		std::optional<TimingRate> interpretFrameRate(const MatchFrameRate &rate)
+		{
+			const auto [numerator, denominator] = rate.words;
+			if (rate.meaning == MatchRateMeaning::AvidExactEditRate)
+				return interpretAvidEditRate(numerator, denominator);
+			if (numerator <= 0 || denominator <= 0)
+				return std::nullopt;
+			return TimingRate{quint64(numerator), quint64(denominator)};
+		}
 		bool same(const MatchAudioFrequency &a, const MatchAudioFrequency &b)
 		{
 			if (a.index() != b.index())
@@ -584,7 +593,11 @@ namespace Bella
 		metadata.kind = database.kind.orElse(fallback.kind).value_or(MatchKind::Unknown);
 		metadata.resolution = database.resolution.orElse(fallback.resolution);
 		if (metadata.kind == MatchKind::Video)
+		{
 			metadata.frameRate = database.frameRate.orElse(fallback.frameRate);
+			if (metadata.frameRate)
+				metadata.exactFrameRate = interpretFrameRate(*metadata.frameRate);
+		}
 		if (metadata.kind == MatchKind::Audio)
 			metadata.sampleRate = database.sampleRate.orElse(fallback.sampleRate);
 		metadata.bitDepth = database.bitDepth.orElse(fallback.bitDepth).value_or(MatchBitDepth{});

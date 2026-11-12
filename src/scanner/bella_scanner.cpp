@@ -2,6 +2,7 @@
 
 #include "bella_scanner_p.h"
 #include "discovery_p.h"
+#include "matching.h"
 #include "read_jobs_p.h"
 
 #include <QFileInfo>
@@ -262,8 +263,10 @@ namespace Bella
 								  qualifyPhysical(entry, QStringLiteral("after reading its header"), result, callbacks);
 			if (eligible)
 				verifyFileIdWhenAvailable(entry, report.fileInformation.fileMobId, FileIdOrigin::Header);
-			entry.match = matchFile(context, entry.path, eligible, std::cref(report),
-									request.includePrecomputeDetails);
+			auto match = matchFile(context, entry.path, eligible, std::cref(report),
+								   request.includePrecomputeDetails);
+			entry.metadata = std::move(match.metadata);
+			entry.localReference = match.localReference;
 		}
 
 		void matchEntries(ReadJobs &jobs, const MatchContext &context, const ScanRequest &request,
@@ -275,10 +278,12 @@ namespace Bella
 				auto &entry = result.entries[index];
 				const bool eligible = !control.cancelled() &&
 									  qualifyPhysical(entry, QStringLiteral("before matching"), result, callbacks);
-				entry.match = matchFile(context, entry.path, eligible, {}, request.includePrecomputeDetails);
+				auto match = matchFile(context, entry.path, eligible, {}, request.includePrecomputeDetails);
+				entry.metadata = std::move(match.metadata);
+				entry.localReference = match.localReference;
 				if (eligible)
-					verifyFileIdWhenAvailable(entry, entry.match.metadata.fileMobId, FileIdOrigin::Database);
-				if (entry.match.needsHeader && !control.cancelled())
+					verifyFileIdWhenAvailable(entry, entry.metadata.fileMobId, FileIdOrigin::Database);
+				if (match.needsHeader && !control.cancelled())
 					headers.append({entry.omfEra ? ReadKind::Omf : ReadKind::Mxf, index});
 			}
 

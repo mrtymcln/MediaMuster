@@ -5,7 +5,7 @@ media discovery, an in-memory inventory, and a shared file-operation engine.
 For what the user sees, start with [How MediaMuster works](current-behaviour.md).
 
 The macOS and Windows application uses [Bella](projects/Bella_readme.md).
-[BellaAppScanner](../src/ui/bella_app_scanner.cpp) connects the scanner to the UI.
+[ScanManager](../src/ui/scan_manager.cpp) runs Bella and delivers inventory records to the UI.
 
 [File Check](../src/operations/file_check.cpp) verifies operation inputs using Bella's parser
 helpers and the existing native file safeguards. File Operations owns execution,
@@ -17,10 +17,10 @@ journalling, Undo and recovery. The AVB reader/reference resolver in
 | Location | Responsibilities |
 | --- | --- |
 | `src/` | App entry point, feature flags, resource manifest and generated-version template. |
-| `src/media/` | Shared media values, identities, text and managed-layout rules, Bella row mapping and CSV export. |
+| `src/media/` | Shared media values, inventory records, identities, text and managed-layout rules, and CSV export. |
 | `src/storage/` | Volume discovery and identity, path keys, native file reveal and storage persistence. |
 | `src/support/` | Diagnostics, worker ownership and enum helpers. |
-| `src/ui/` | Main window, scan and file-operation controllers, table model, filter proxy, volume-list widget, filter criteria and display helpers. |
+| `src/ui/` | Main window, scan management and result conversion, file-operation controller, table model, filter proxy, volume-list widget, filter criteria and display helpers. |
 | `src/ui/dialogs/` | Task dialogs and their presentation. |
 | `src/operations/` | Requests, planning, execution, checks, native file routines, journals, recovery and Rebalance. |
 | `src/scanner/` | Scanner, media readers, matching, timing and media labels. |
@@ -37,10 +37,10 @@ remain the same. Application and test CMake lists name the sources explicitly.
    The main window retains the last detected paths and session manual locations;
    scan commands use those paths without rediscovering drives.
 2. [MainWindow](../src/ui/main_window.cpp) passes selected/all locations and the OMF
-   and precompute gates to `BellaAppScanner`, which owns location admission and
+   and precompute gates to `ScanManager`, which owns location admission and
    trusted-rescan preparation. Starting a scan clears the old inventory,
    filters and selection.
-3. `BellaAppScanner` starts one organiser `QThread`. [Bella discovery](../src/scanner/discovery_p.cpp)
+3. `ScanManager` starts one organiser `QThread`. [Bella discovery](../src/scanner/discovery_p.cpp)
    inventories admitted physical files and database paths. The organiser then
    uses a fresh [ReadJobs](../src/scanner/read_jobs_p.cpp) pool with at most four
    outstanding PMR/MDB/required-header jobs in total.
@@ -49,11 +49,11 @@ remain the same. Application and test CMake lists name the sources explicitly.
    matches the databases and reads only required headers, then matches those
    replies using the same context. Every discovered physical location retains
    its own row identity, even when Avid IDs are shared.
-5. [Bella media mapper](../src/media/bella_media_mapper.cpp), the app adapter, prepares owned
-   [MediaFile](../src/media/media_file.h) rows, including typed timing/rates and
-   operation-safety receipts. `bellaMediaFile()` and
-   `applyBellaOperationHandoff()` share this adapter implementation. Working reader reports
-   and matching indexes are released before final row delivery.
+5. Bella returns [scan entries](../src/scanner/bella_scanner.h) with selected metadata,
+   local database status and operation instructions. `ScanManager` converts each entry
+   to a [MediaFileRecord](../src/media/media_file_record.h) with typed timing, rates and
+   an operation receipt using [one conversion](../src/ui/scan_result_p.cpp). Bella releases
+   its reader reports and matching indexes before this handoff.
 6. [MediaTableModel](../src/ui/media_table_model.cpp) stores prepared rows;
    [MediaFilterProxy](../src/ui/media_filter_proxy.cpp) filters and sorts them without
    changing the underlying inventory. Results replace the model at scan end,
@@ -101,7 +101,7 @@ states follow the same inventory, selection and activity rules.
 | [Matcher](../src/scanner/matching.cpp) | Uses exact local PMR filenames and full IDs, scan-wide MDB indexes and compatible already-read headers. Selects values and local-reference status and decides whether a header is needed. |
 | [Timing](../src/scanner/timing.cpp) | Preserves exact duration/rates, interprets qualified Avid edit rates and computes displayed timecode components. |
 | [Media labels](../src/scanner/media_labels.cpp) | Interprets selected compression facts and derives effects from a confirmed precompute name using shared catalogues. |
-| [BellaAppScanner](../src/ui/bella_app_scanner.cpp) | Owns background result preparation, event-driven progress, warning/log batches and final delivery on the GUI thread. |
+| [ScanManager](../src/ui/scan_manager.cpp) | Runs Bella in the background, forwards progress and warnings, and delivers inventory records on the GUI thread. |
 
 The fixed source rules are implemented in the matcher, independently of any former
 policy table. Project prefers eligible PMR, then MDB, then an eligible already-read
@@ -333,7 +333,7 @@ affected databases. The main window rescans the affected location after a run.
 [diagnostics.h](../src/support/diagnostics.h), owns the log file, Qt logging categories,
 message formatting, startup retention check and macOS crash-report collection.
 MainWindow displays live scanner batches and file-operation messages in the Console.
-The scanner facade persists all warning details through Diagnostics, but sends
+`ScanManager` persists all warning details through Diagnostics, but sends
 only the first five warnings and one overflow notice to the Console for each scan.
 It also persists and publishes the scan outcome. MainWindow persists messages
 received through `addLog()`. Bin loaders return errors to the UI for one report;
@@ -341,7 +341,7 @@ they do not log the same failure themselves. Qt diagnostics also go to the file.
 Console does not read the saved log.
 
 [BackgroundJob](../src/support/background_job.h) owns a worker thread with cooperative
-cancellation for operation workers. BellaAppScanner owns its separate
+cancellation for operation workers. `ScanManager` owns its separate
 organiser thread and asynchronously waits for readiness; each Bella scan owns a
 fresh four-job reader pool. Bin Filter has a private two-worker pool. Destination/
 Rebalance previews and history reads use Qt's shared pool. Owners must preserve

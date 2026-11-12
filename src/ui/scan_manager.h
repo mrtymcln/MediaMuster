@@ -1,7 +1,7 @@
 #pragma once
 
 #include "scanner/bella_scanner.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 
 #include <QObject>
 #include <QPointer>
@@ -18,25 +18,19 @@ struct LogMessage
 	QString message;
 };
 
-// MARK: - Application scanner
+// MARK: - Scan manager
 
-// App-side owner-thread connection to Bella's synchronous organiser.
-class BellaAppScanner : public QObject
+// Runs Bella in the background and delivers inventory records on the GUI thread.
+class ScanManager : public QObject
 {
 	Q_OBJECT
 public:
 	using Location = Bella::ScanLocation;
-	struct Options
-	{
-		QVector<Location> locations;
-		bool includeOmf = false;
-		bool includePrecomputeDetails = false;
-	};
 
 	// MARK: - Lifecycle
 
-	explicit BellaAppScanner(QObject *parent = nullptr);
-	~BellaAppScanner() override;
+	explicit ScanManager(QObject *parent = nullptr);
+	~ScanManager() override;
 
 	// MARK: - Scan locations
 
@@ -45,7 +39,7 @@ public:
 
 	// MARK: - Scan control
 
-	void startScan(const Options &options);
+	void startScan(const Bella::ScanRequest &request);
 	bool cancelScan();
 	bool isActive() const noexcept;
 
@@ -56,15 +50,14 @@ signals:
 	void scanProgress(const QString &stage, qsizetype completed, qsizetype total, const QString &path);
 	void scanFinalising();
 	void scanLogBatch(const QVector<LogMessage> &batch);
-	void scanFinished(const QVector<MediaFile> &rows, bool cancelled, bool discoveryComplete);
+	void scanFinished(const QVector<MediaFileRecord> &rows, bool cancelled, bool discoveryComplete);
 	void scanFailed(const QString &message);
 
 private:
-
 	// MARK: - Worker completion
 
 	struct Run;
-	static void finishWhenReady(QThread *worker, const QPointer<BellaAppScanner> &owner);
+	static void finishWhenReady(QThread *worker, const QPointer<ScanManager> &owner);
 	void publishCompletion();
 	void publishFailure(const QString &message);
 	void publishLog(const QVector<LogMessage> &batch);

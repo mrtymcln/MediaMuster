@@ -14,11 +14,11 @@
 
 namespace
 {
-	MediaFile render(const QString &effect, const QString &volume, const QString &name)
+	MediaFileRecord render(const QString &effect, const QString &volume, const QString &name)
 	{
-		MediaFile row;
-		row.type = MediaFile::Type::Precompute;
-		row.precomputeCategory = MediaFile::PrecomputeCategory::RenderedEffects;
+		MediaFileRecord row;
+		row.type = MediaFileRecord::Type::Precompute;
+		row.precomputeCategory = MediaFileRecord::PrecomputeCategory::RenderedEffects;
 		row.effect = effect;
 		row.effectCategory = QStringLiteral("Blend");
 		row.volumeName = QStringLiteral("EDIT");
@@ -28,9 +28,9 @@ namespace
 		return row;
 	}
 
-	QVector<MediaFile> rows()
+	QVector<MediaFileRecord> rows()
 	{
-		QVector<MediaFile> files{
+		QVector<MediaFileRecord> files{
 			render(QStringLiteral("3D Warp"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("warp1.mxf")),
 			render(QStringLiteral("3D Warp"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("warp2.mxf")),
 			render(QStringLiteral("3D Warp"), QStringLiteral("/Volumes/EDIT2"), QStringLiteral("warp3.mxf")),
@@ -39,7 +39,7 @@ namespace
 		resize.effectCategory = QStringLiteral("Image");
 		files.append(resize);
 		auto title = render(QStringLiteral("Title"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("title.mxf"));
-		title.precomputeCategory = MediaFile::PrecomputeCategory::TitlesAndMatteKeys;
+		title.precomputeCategory = MediaFileRecord::PrecomputeCategory::TitlesAndMatteKeys;
 		title.effectCategory = QStringLiteral("Title");
 		files.append(title);
 		title.effect = QStringLiteral("3D Warp"); // Same effect name, different proven subtype.
@@ -48,11 +48,11 @@ namespace
 		title.mediaFilePath = QStringLiteral("/Volumes/EDIT/renamed-title.mxf");
 		files.append(title);
 		auto unknown = render({}, QStringLiteral("/Volumes/EDIT"), QStringLiteral("unknown.mxf"));
-		unknown.precomputeCategory = MediaFile::PrecomputeCategory::Unknown;
+		unknown.precomputeCategory = MediaFileRecord::PrecomputeCategory::Unknown;
 		unknown.effectCategory.clear();
 		files.append(unknown);
 		auto ordinary = render(QStringLiteral("Ordinary fake effect"), QStringLiteral("/Volumes/EDIT"), QStringLiteral("source.mxf"));
-		ordinary.type = MediaFile::Type::Media;
+		ordinary.type = MediaFileRecord::Type::Media;
 		files.append(ordinary);
 		return files;
 	}
@@ -81,7 +81,7 @@ namespace
 		return dialog.findChild<QLabel *>(QStringLiteral("precomputeMatchingCount"))->text();
 	}
 
-	QStringList matchingFiles(const QVector<MediaFile> &files, const PrecomputeFilter &filter, const QString &volume = {})
+	QStringList matchingFiles(const QVector<MediaFileRecord> &files, const PrecomputeFilter &filter, const QString &volume = {})
 	{
 		MediaTableModel model;
 		model.setMediaFiles(files);

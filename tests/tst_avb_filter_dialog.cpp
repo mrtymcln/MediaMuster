@@ -53,12 +53,12 @@ namespace
 
 		Harness() : errors(&dialog, &AvbFilterDialog::loadError)
 		{
-			MediaFile hit;
+			MediaFileRecord hit;
 			hit.mediaFilePath = QStringLiteral("/media/hit.mxf");
 			hit.fileName = QStringLiteral("hit.mxf");
 			hit.fileMobId = MobId::format(TestAvb::Source);
 			hit.masterMobId = MobId::format(TestAvb::Master);
-			MediaFile outside;
+			MediaFileRecord outside;
 			outside.mediaFilePath = QStringLiteral("/media/outside.mxf");
 			outside.fileName = QStringLiteral("outside.mxf");
 			outside.fileMobId = MobId::format(TestAvb::Other);

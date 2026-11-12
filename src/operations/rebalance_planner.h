@@ -1,7 +1,7 @@
 #pragma once
 
 #include "media/avid_media_layout.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "operation_request.h"
 
 #include <QHash>
@@ -23,7 +23,7 @@ struct RebalanceMove
 	QString masterMobId; ///< Empty for files with no relatives group.
 	qint64 sizeBytes = 0;
 	qint64 modifiedMs = -1;
-	QString fileMobId;				   ///< Essence-file identity retained for the engine's pre-move check.
+	QString fileMobId;						  ///< Essence-file identity retained for the engine's pre-move check.
 	std::optional<OperationItem> scannedItem; ///< Exact selection receipt retained while the plan is previewed.
 };
 
@@ -81,8 +81,8 @@ namespace RebalancePlanner
 	QHash<NumberedMxfFolder, FolderCount> countFolders(const QString &mxfRootPath, const QSet<NumberedMxfFolder> &folders);
 
 	std::optional<NumberedMxfFolder> srcFolderOf(const QString &sourcePath);
-	bool isEligible(const MediaFile &file);
+	bool isEligible(const MediaFileRecord &file);
 	RebalancePlan computePlan(const QString &mxfRootPath, const QString &volumeLabel,
-							  const QVector<MediaFile> &files);
+							  const QVector<MediaFileRecord> &files);
 	OperationRequest requestForPlan(const RebalancePlan &plan);
 } // namespace RebalancePlanner

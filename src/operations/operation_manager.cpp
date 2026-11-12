@@ -114,12 +114,12 @@ void OperationManager::trashUsed(const QString &folder, int count)
 
 // MARK: - Item building
 
-QVector<OperationItem> OperationManager::itemsFromMediaFiles(const QVector<MediaFile> &files,
-											   const QHash<QString, ConflictPolicy> &policies)
+QVector<OperationItem> OperationManager::itemsFromMediaFiles(const QVector<MediaFileRecord> &files,
+															 const QHash<QString, ConflictPolicy> &policies)
 {
 	QVector<OperationItem> out;
 	out.reserve(files.size());
-	for (const MediaFile &mf : files)
+	for (const MediaFileRecord &mf : files)
 	{
 		auto it = operationItemFromMediaFile(mf);
 		if (const auto p = policies.constFind(mf.mediaFilePath); p != policies.constEnd())

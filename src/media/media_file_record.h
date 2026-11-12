@@ -31,19 +31,19 @@ struct BellaRowValues
 	std::optional<Bella::MatchAudioFrequency> sampleRate;
 	Bella::MatchBitDepth bitDepth;
 	Bella::FileTiming timing;
-	// Exact interpreted rates and timecode components prepared by the Bella
-	// adapter. The common table and exporter need no Bella runtime linkage.
+	// Bella supplies the exact frame rate. The scan conversion prepares the
+	// sample rate and duration timecode for the table and exporter.
 	std::optional<Bella::TimingRate> frameRateValue;
 	std::optional<Bella::TimingRate> sampleRateValue;
 	std::tuple<qint64, int, int, int> durationTimecode{-1, 0, 0, 0};
 };
 
-// MARK: - MediaFile
+// MARK: - MediaFileRecord
 
-/// One physical file in the scan inventory, identified by its path.
+/// In-memory inventory record for one physical file, identified by its path.
 /// FileMobId and MasterMobId connect it to Avid records, bins and relatives;
 /// either ID may be unknown. Display helpers are shared with the table and CSV.
-struct MediaFile
+struct MediaFileRecord
 {
 	// MARK: Identity
 	KelpieId kelpieId = 0; ///< Physical row identity within this scan session only.
@@ -302,12 +302,7 @@ struct MediaFile
 		const auto &rate = bellaValues->frameRateValue;
 		if (!rate)
 			return {};
-		auto label = QString::number(double(rate->numerator) / rate->denominator, 'f', 3);
-		while (label.endsWith(QLatin1Char('0')))
-			label.chop(1);
-		if (label.endsWith(QLatin1Char('.')))
-			label.chop(1);
-		return label;
+		return QString::number(double(rate->numerator) / rate->denominator, 'f', 2);
 	}
 
 	std::optional<quint32> bellaDepthBits() const
@@ -377,4 +372,4 @@ struct MediaFile
 	}
 };
 
-Q_DECLARE_METATYPE(MediaFile)
+Q_DECLARE_METATYPE(MediaFileRecord)

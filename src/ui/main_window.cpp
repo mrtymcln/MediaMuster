@@ -117,7 +117,7 @@ namespace
 			   Conventions::isOmfRootName(name);
 	}
 
-	QStringList restorationScanPaths(const QVector<MediaFile> &files, const QSet<QString> &restored)
+	QStringList restorationScanPaths(const QVector<MediaFileRecord> &files, const QSet<QString> &restored)
 	{
 		// Use stored volume roots to avoid relabelling drives as "Avid MediaFiles".
 		// Resolve paths without probing directories on the UI thread.
@@ -165,7 +165,7 @@ namespace
 		{MediaFilterProxy::FilterMode::Precompute, "Precomputes",
 		 "Media whose metadata identifies a precompute master: rendered effects,\n"
 		 "titles and matte keys, or a precompute with an unknown category."},
-		// MainWindow supplies tab text; MediaFile supplies row-status explanations.
+		// MainWindow supplies tab text; MediaFileRecord supplies row-status explanations.
 		{MediaFilterProxy::FilterMode::NoDatabase, "No Database"},
 		{MediaFilterProxy::FilterMode::NoReference, "No Reference"},
 		{MediaFilterProxy::FilterMode::NonPortable, "Non-Portable"},
@@ -179,7 +179,7 @@ namespace
 MainWindow::MainWindow(QWidget *parent, StartupMode startup)
 	: QMainWindow(parent),
 	  m_volumeDetector(new VolumeDetector(this)),
-	  m_scanner(new AppScanner(this)),
+	  m_scanner(new ScanManager(this)),
 	  m_operations(new FileOperationController(this)),
 	  m_model(new MediaTableModel(this)),
 	  m_proxy(new MediaFilterProxy(this))
@@ -381,12 +381,12 @@ QWidget *MainWindow::buildToolbar()
 		if (fd.mode == MediaFilterProxy::FilterMode::NoDatabase)
 		{
 			// Share database explanations with the row tooltips.
-			using DbStatus = MediaFile::DbStatus;
-			m_filterTabs->setTabToolTip(idx, MediaFile::dbStatusText(DbStatus::NoDatabase).why +
-												 QStringLiteral("\n\n") + MediaFile::dbStatusText(DbStatus::DbUnreadable).why);
+			using DbStatus = MediaFileRecord::DbStatus;
+			m_filterTabs->setTabToolTip(idx, MediaFileRecord::dbStatusText(DbStatus::NoDatabase).why +
+												 QStringLiteral("\n\n") + MediaFileRecord::dbStatusText(DbStatus::DbUnreadable).why);
 		}
 		else if (fd.mode == MediaFilterProxy::FilterMode::NoReference)
-			m_filterTabs->setTabToolTip(idx, MediaFile::dbStatusText(MediaFile::DbStatus::NoReference).why);
+			m_filterTabs->setTabToolTip(idx, MediaFileRecord::dbStatusText(MediaFileRecord::DbStatus::NoReference).why);
 		else if (fd.tooltip)
 			m_filterTabs->setTabToolTip(idx, QString::fromLatin1(fd.tooltip));
 	}
@@ -725,11 +725,11 @@ void MainWindow::onAbout()
 
 void MainWindow::setupConnections()
 {
-	connect(m_scanner, &AppScanner::scanDiscovering, this, &MainWindow::onScanDiscovering, kScanConnection);
-	connect(m_scanner, &AppScanner::scanLogBatch, this, &MainWindow::onScanLogBatch, kScanConnection);
-	connect(m_scanner, &AppScanner::scanProgress, this, &MainWindow::onBellaScanProgress);
-	connect(m_scanner, &AppScanner::scanFinished, this,
-			[this](const QVector<MediaFile> &results, bool cancelled, bool discoveryComplete)
+	connect(m_scanner, &ScanManager::scanDiscovering, this, &MainWindow::onScanDiscovering, kScanConnection);
+	connect(m_scanner, &ScanManager::scanLogBatch, this, &MainWindow::onScanLogBatch, kScanConnection);
+	connect(m_scanner, &ScanManager::scanProgress, this, &MainWindow::onBellaScanProgress);
+	connect(m_scanner, &ScanManager::scanFinished, this,
+			[this](const QVector<MediaFileRecord> &results, bool cancelled, bool discoveryComplete)
 			{
 				onScanFinished(results);
 				if (cancelled || !discoveryComplete)
@@ -739,7 +739,7 @@ void MainWindow::setupConnections()
 				}
 				finishBellaClose();
 			});
-	connect(m_scanner, &AppScanner::scanFailed, this, [this](const QString &message)
+	connect(m_scanner, &ScanManager::scanFailed, this, [this](const QString &message)
 			{
 		if (m_bellaClose == BellaClose::None)
 			onScanFailed(message);
@@ -750,7 +750,7 @@ void MainWindow::setupConnections()
 			finishBellaClose();
 		} });
 	connect(
-		m_scanner, &AppScanner::scanFinalising, this,
+		m_scanner, &ScanManager::scanFinalising, this,
 		[this]
 		{
 			if (m_bellaCancelling)
@@ -997,7 +997,7 @@ void MainWindow::onFilterByBins()
 						return;
 					// A matching inventory row still counts when other filters hide it.
 					const auto &files = m_model->allFiles();
-					const bool matched = std::any_of(files.cbegin(), files.cend(), [&bin](const MediaFile &file)
+					const bool matched = std::any_of(files.cbegin(), files.cend(), [&bin](const MediaFileRecord &file)
 													 { return bin.mediaFileIds.matches(AvbFileId::fromMobId(file.fileMobId)); });
 					if (!matched)
 						addLog(QtInfoMsg, QStringLiteral("filters"),
@@ -1047,12 +1047,12 @@ namespace
 	struct RebalanceInventory
 	{
 		QHash<QString, QString> mxfRootPathsByLabel;
-		QHash<QString, QVector<MediaFile>> filesByMxfRootPath;
+		QHash<QString, QVector<MediaFileRecord>> filesByMxfRootPath;
 		QHash<QString, QString> volumePathByLabel;
 		QString initialLabel;
 	};
 
-	RebalanceInventory prepareRebalanceInventory(const QVector<MediaFile> &files)
+	RebalanceInventory prepareRebalanceInventory(const QVector<MediaFileRecord> &files)
 	{
 		RebalanceInventory inventory;
 		// Each file lives in <mxfRootPath>/<mediaFolderName>/<filename>.
@@ -1062,7 +1062,7 @@ namespace
 		QHash<QString, QString> labelByMxfRootPath;
 		QSet<QString> usedLabels;
 
-		for (const MediaFile &mf : files)
+		for (const MediaFileRecord &mf : files)
 		{
 			if (!RebalancePlanner::isEligible(mf))
 				continue;
@@ -1242,7 +1242,7 @@ void MainWindow::onPathsDropped(const QStringList &paths)
 
 void MainWindow::addVolumePath(const QString &requestedPath)
 {
-	const auto location = AppScanner::addedLocation(requestedPath);
+	const auto location = ScanManager::addedLocation(requestedPath);
 	if (!location)
 	{
 		const QString message = tr("Add an Avid MediaFiles folder, or a drive containing one at its root.");
@@ -1304,7 +1304,7 @@ void MainWindow::rebuildVolumeList(const QVector<VolumeInfo> &volumes)
 	manualPaths.sort();
 	for (const QString &path : manualPaths)
 	{
-		const auto location = AppScanner::addedLocation(path);
+		const auto location = ScanManager::addedLocation(path);
 		if (!location)
 			continue;
 		m_manualVolumes.insert(path, location->kind);
@@ -1369,39 +1369,36 @@ void MainWindow::scanEverything()
 
 void MainWindow::scanListedPaths(const QStringList &paths)
 {
-	QVector<AppScanner::Location> locations;
+	QVector<ScanManager::Location> locations;
 	for (const auto &path : paths)
-		locations.append({m_manualVolumes.value(path, AppScanner::Location::Kind::MediaBase), path});
+		locations.append({m_manualVolumes.value(path, ScanManager::Location::Kind::MediaBase), path});
 	startScan(locations);
 }
 
 void MainWindow::rescanPaths(const QStringList &paths)
 {
-	QVector<AppScanner::Location> locations;
+	QVector<ScanManager::Location> locations;
 	for (const auto &path : paths)
 	{
 		const auto manual = m_manualVolumes.constFind(path);
 		if (manual != m_manualVolumes.cend())
 			locations.append({manual.value(), path});
 		else if (m_detectedVolumePaths.contains(path))
-			locations.append({AppScanner::Location::Kind::MediaBase, path});
+			locations.append({ScanManager::Location::Kind::MediaBase, path});
 		else
-			locations.append(AppScanner::rescanLocation(path));
+			locations.append(ScanManager::rescanLocation(path));
 	}
 	startScan(locations);
 }
 
-void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
+void MainWindow::startScan(const QVector<ScanManager::Location> &locations)
 {
 	if (!m_operations->isIdle() || locations.isEmpty())
 		return;
 	if (m_bellaClose != BellaClose::None)
 		return;
 	m_bellaCancelling = false;
-	AppScanner::Options opts;
-	opts.includeOmf = m_omfScanEnabled;
-	opts.locations = locations;
-	opts.includePrecomputeDetails = m_precomputesEnabled;
+	const Bella::ScanRequest request{locations, m_omfScanEnabled, m_precomputesEnabled};
 
 	m_operations->setActivity(FileOperationController::Activity::Scanning);
 	// Release the previous inventory and issue snapshots before building another.
@@ -1412,7 +1409,7 @@ void MainWindow::startScan(const QVector<AppScanner::Location> &locations)
 	progressDialog()->begin();
 	m_scanTimer.start();
 
-	m_scanner->startScan(opts);
+	m_scanner->startScan(request);
 }
 
 void MainWindow::onScanDiscovering(const QString &path)
@@ -1452,7 +1449,7 @@ void MainWindow::onScanLogBatch(const QVector<LogMessage> &batch)
 	m_console->appendPlainText(combined);
 }
 
-void MainWindow::onScanFinished(const QVector<MediaFile> &results)
+void MainWindow::onScanFinished(const QVector<MediaFileRecord> &results)
 {
 	m_model->setMediaFiles(results);
 	m_persistentSelectedPaths.clear();
@@ -1517,7 +1514,7 @@ void MainWindow::rebuildProjectList()
 		item->setData(Qt::UserRole, name);
 		QString tip = tr("%1 files, %2").arg(stat.count).arg(Format::bytes(stat.bytes));
 		if (!stat.hasProject)
-			tip += QStringLiteral("\n\n") + MediaFile::noProjectWhy();
+			tip += QStringLiteral("\n\n") + MediaFileRecord::noProjectWhy();
 		item->setToolTip(tip);
 		m_projectList->addItem(item);
 		item->setSelected(selected.contains(name));
@@ -1670,7 +1667,7 @@ void MainWindow::openManageMedia(ManageMediaDialog::Operation initialOp)
 					  dlg.conflictPolicies());
 }
 
-bool MainWindow::dispatchOperation(OperationKind kind, QVector<MediaFile> files, const QString &dest,
+bool MainWindow::dispatchOperation(OperationKind kind, QVector<MediaFileRecord> files, const QString &dest,
 								   bool preserve, const QHash<QString, ConflictPolicy> &policies)
 {
 	// Extract request fields and captured safety checks from the selection,
@@ -1735,7 +1732,7 @@ void MainWindow::onExportCsv()
 		return;
 
 	// Collect the chosen rows in export order before writing.
-	QVector<MediaFile> rows;
+	QVector<MediaFileRecord> rows;
 	if (exportSelected)
 	{
 		rows = sel;
@@ -1787,7 +1784,7 @@ void MainWindow::onSelectRelatives()
 		return;
 
 	QSet<QString> masterIds;
-	for (const MediaFile &f : sel)
+	for (const MediaFileRecord &f : sel)
 	{
 		if (!f.masterMobId.isEmpty())
 			masterIds.insert(f.masterMobId);
@@ -1803,7 +1800,7 @@ void MainWindow::onSelectRelatives()
 	QVector<int> rows;
 	for (int row = 0; row < m_proxy->rowCount(); ++row)
 	{
-		const MediaFile &f = fileAtProxyRow(row);
+		const MediaFileRecord &f = fileAtProxyRow(row);
 		if (masterIds.contains(f.masterMobId))
 			rows.append(row);
 	}
@@ -1921,10 +1918,10 @@ void MainWindow::showTableContextMenu(const QPoint &pos)
 
 // MARK: - Selection helper
 
-QVector<MediaFile> MainWindow::selectedFiles() const
+QVector<MediaFileRecord> MainWindow::selectedFiles() const
 {
 	const auto rows = m_tableView->selectionModel()->selectedRows();
-	QVector<MediaFile> result;
+	QVector<MediaFileRecord> result;
 	result.reserve(rows.size());
 	for (const auto &pi : rows)
 		result.append(fileForProxyIndex(pi));
@@ -1933,12 +1930,12 @@ QVector<MediaFile> MainWindow::selectedFiles() const
 
 // MARK: - Proxy row lookup
 
-const MediaFile &MainWindow::fileForProxyIndex(const QModelIndex &proxyIndex) const
+const MediaFileRecord &MainWindow::fileForProxyIndex(const QModelIndex &proxyIndex) const
 {
 	return m_model->fileAt(m_proxy->mapToSource(proxyIndex).row());
 }
 
-const MediaFile &MainWindow::fileAtProxyRow(int proxyRow) const
+const MediaFileRecord &MainWindow::fileAtProxyRow(int proxyRow) const
 {
 	return fileForProxyIndex(m_proxy->index(proxyRow, 0));
 }
@@ -2081,7 +2078,7 @@ void MainWindow::updateFilterCounts()
 {
 	// Count the whole inventory so totals stay stable when other filters change.
 	std::array<int, kFilterDefs.size()> counts{};
-	for (const MediaFile &file : m_model->allFiles())
+	for (const MediaFileRecord &file : m_model->allFiles())
 	{
 		for (size_t i = 0; i < kFilterDefs.size(); ++i)
 		{

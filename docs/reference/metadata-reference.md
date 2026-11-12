@@ -62,7 +62,7 @@ Project displays “No project” when missing. Unclassified Kind and Type displ
 `unknown`.
 Unavailable technical values remain distinct from zero. Table, filtering and CSV
 share current row formatting; they do not retain every parser observation.
-See [MediaFile](../../src/media/media_file.h) and
+See [MediaFileRecord](../../src/media/media_file_record.h) and
 [matching](matching.md) for the implemented boundaries.
 
 ## Original Bin storage

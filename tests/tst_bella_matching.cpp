@@ -342,6 +342,9 @@ void TestBellaMatching::selectedFieldPriorities()
 	QCOMPARE(m.frameRate->words.numerator, qint32(2997));
 	QCOMPARE(m.frameRate->words.denominator, qint32(100));
 	QCOMPARE(m.frameRate->meaning, Bella::MatchRateMeaning::AvidExactEditRate);
+	QVERIFY(m.exactFrameRate);
+	QCOMPARE(m.exactFrameRate->numerator, quint64(30000));
+	QCOMPARE(m.exactFrameRate->denominator, quint64(1001));
 	QVERIFY(!m.sampleRate);
 	QCOMPARE(m.bitDepth.bits, std::optional<quint32>(10));
 	QCOMPARE(m.bitDepth.representation, Bella::MatchDepthRepresentation::Integer);
@@ -578,6 +581,7 @@ void TestBellaMatching::conflictingMdbFrameRates()
 	const auto header = mxf();
 	const auto answer = Bella::matchFile(context, physical, true, std::cref(header), false);
 	QVERIFY(!answer.metadata.frameRate); // A lower-priority 25 fps header cannot erase the conflict.
+	QVERIFY(!answer.metadata.exactFrameRate);
 	QCOMPARE(answer.metadata.project, QStringLiteral("PMR project"));
 	QCOMPARE(answer.metadata.clipName, QStringLiteral("MDB clip"));
 	QCOMPARE(answer.metadata.kind, Bella::MatchKind::Video);
@@ -687,6 +691,9 @@ void TestBellaMatching::durationIsNotRepairedByAnotherSource()
 		QVERIFY(answer.metadata.frameRate);
 		QCOMPARE(answer.metadata.frameRate->words.numerator, qint32(25));
 		QCOMPARE(answer.metadata.frameRate->meaning, Bella::MatchRateMeaning::Literal);
+		QVERIFY(answer.metadata.exactFrameRate);
+		QCOMPARE(answer.metadata.exactFrameRate->numerator, quint64(25));
+		QCOMPARE(answer.metadata.exactFrameRate->denominator, quint64(1));
 	}
 	if (variation == 3)
 	{

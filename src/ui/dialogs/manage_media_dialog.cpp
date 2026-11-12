@@ -55,7 +55,7 @@ static void applyConflictPolicyToRow(QTreeWidgetItem *item, const QString &baseD
 
 // MARK: - Construction
 
-ManageMediaDialog::ManageMediaDialog(const QVector<MediaFile> &files, QWidget *parent,
+ManageMediaDialog::ManageMediaDialog(const QVector<MediaFileRecord> &files, QWidget *parent,
 									 Operation initialOp)
 	: QDialog(parent),
 	  m_files(files)
@@ -346,7 +346,7 @@ void ManageMediaDialog::updatePreview()
 	{
 		m_previewTree->setHeaderLabels({tr("Source")});
 		m_previewTree->setColumnCount(1);
-		for (const MediaFile &mf : m_files)
+		for (const MediaFileRecord &mf : m_files)
 			m_previewTree->addTopLevelItem(new QTreeWidgetItem({mf.mediaFilePath}));
 		m_conflictGroup->setVisible(false);
 	}
@@ -357,7 +357,7 @@ void ManageMediaDialog::updatePreview()
 
 		if (dest.isEmpty())
 		{
-			for (const MediaFile &mf : m_files)
+			for (const MediaFileRecord &mf : m_files)
 			{
 				auto *item = new QTreeWidgetItem({mf.mediaFilePath, tr("(choose destination)")});
 				item->setForeground(1, Qt::gray);
@@ -370,7 +370,7 @@ void ManageMediaDialog::updatePreview()
 			QVector<QString> destPaths;
 			destPaths.reserve(m_files.size());
 			QHash<QString, int> destCounts;
-			for (const MediaFile &mf : m_files)
+			for (const MediaFileRecord &mf : m_files)
 			{
 				const QString dp = OperationPlan::destinationPath(mf.fileName, mf.mediaFolderName, dest, preserve, mf.omfEra);
 				destPaths.append(dp);
@@ -384,7 +384,7 @@ void ManageMediaDialog::updatePreview()
 			m_pendingRows.reserve(m_files.size());
 			for (int idx = 0; idx < m_files.size(); ++idx)
 			{
-				const MediaFile &mf = m_files[idx];
+				const MediaFileRecord &mf = m_files[idx];
 				const QString &dp = destPaths[idx];
 				auto *item = new QTreeWidgetItem({mf.mediaFilePath, dp});
 				// Stash baseDest on the item so the global-cascade handler
@@ -609,7 +609,7 @@ void ManageMediaDialog::updateSummary()
 {
 	const int count = m_files.size();
 	qint64 totalBytes = 0;
-	for (const MediaFile &mf : m_files)
+	for (const MediaFileRecord &mf : m_files)
 		totalBytes += mf.sizeBytes;
 
 	QString opVerb;

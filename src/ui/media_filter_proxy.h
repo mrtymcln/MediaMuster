@@ -8,7 +8,7 @@
 #include <QString>
 
 class MediaTableModel;
-struct MediaFile;
+struct MediaFileRecord;
 
 // MARK: - Media filter proxy
 
@@ -65,7 +65,7 @@ public:
 	/// alone — project, bin, and search are separate axes applied in
 	/// filterAcceptsRow. Static and shared so MainWindow's tab-count
 	/// tally can't drift from what the table actually shows.
-	static bool matchesMode(FilterMode mode, const MediaFile &f);
+	static bool matchesMode(FilterMode mode, const MediaFileRecord &f);
 
 public slots:
 	/// Apply ordered bin operations to each row's file-locator membership.

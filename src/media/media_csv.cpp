@@ -53,7 +53,7 @@ namespace MediaCsv
 		return line + QLatin1Char('\n');
 	}
 
-	QString rowLine(const MediaFile &f, Options options)
+	QString rowLine(const MediaFileRecord &f, Options options)
 	{
 		QString line;
 		QTextStream out(&line);
@@ -79,7 +79,7 @@ namespace MediaCsv
 		return line;
 	}
 
-	bool write(const QString &path, const QVector<MediaFile> &rows, Options options)
+	bool write(const QString &path, const QVector<MediaFileRecord> &rows, Options options)
 	{
 		QSaveFile file(path);
 		// Binary mode preserves LF endings, including newlines inside quoted fields on Windows.
@@ -89,7 +89,7 @@ namespace MediaCsv
 		out.setGenerateByteOrderMark(true);
 
 		out << headerLine(options);
-		for (const MediaFile &f : rows)
+		for (const MediaFileRecord &f : rows)
 			out << rowLine(f, options);
 		out.flush();
 		return out.status() == QTextStream::Ok && file.commit();

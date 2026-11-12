@@ -59,7 +59,7 @@ void MediaTableModel::setOmfScanEnabled(bool enabled)
 
 // MARK: - Media row updates
 
-void MediaTableModel::setMediaFiles(const QVector<MediaFile> &files)
+void MediaTableModel::setMediaFiles(const QVector<MediaFileRecord> &files)
 {
 	beginResetModel();
 	m_files = files;
@@ -90,7 +90,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 	{
 		if (m_files[row].mediaFilePath != source)
 			continue;
-		MediaFile transferred = m_files[row];
+		MediaFileRecord transferred = m_files[row];
 		transferred.mediaFilePath = info.absoluteFilePath();
 		transferred.fileName = info.fileName();
 		transferred.mediaFolderName = info.dir().dirName();
@@ -107,7 +107,7 @@ void MediaTableModel::applyTransfer(const QString &source, const QString &destin
 		// Destination databases have not been parsed by this transfer. Their
 		// presence cannot establish that this new location is absent from them.
 		const auto databases = info.dir().entryList({QStringLiteral("*.pmr"), QStringLiteral("*.mdb")}, QDir::Files | QDir::NoSymLinks);
-		transferred.dbStatus = databases.isEmpty() ? MediaFile::DbStatus::NoDatabase : MediaFile::DbStatus::DbUnreadable;
+		transferred.dbStatus = databases.isEmpty() ? MediaFileRecord::DbStatus::NoDatabase : MediaFileRecord::DbStatus::DbUnreadable;
 		if (copy)
 		{
 			transferred.kelpieId = m_ids.allocate();
@@ -158,13 +158,13 @@ void MediaTableModel::removeFilesByPath(const QSet<QString> &paths)
 
 // MARK: - Row access
 
-const MediaFile &MediaTableModel::fileAt(int row) const
+const MediaFileRecord &MediaTableModel::fileAt(int row) const
 {
 	// Filtering can invalidate mapped rows. Assert in debug and return an empty record in release.
 	Q_ASSERT(row >= 0 && row < m_files.size());
 	if (row < 0 || row >= m_files.size())
 	{
-		static const MediaFile empty;
+		static const MediaFileRecord empty;
 		return empty;
 	}
 	return m_files[row];
@@ -196,29 +196,29 @@ void MediaTableModel::setPrecomputesEnabled(bool enabled)
 
 namespace
 {
-	int kindSortRank(MediaFile::Kind kind)
+	int kindSortRank(MediaFileRecord::Kind kind)
 	{
 		switch (kind)
 		{
-		case MediaFile::Kind::Video:
+		case MediaFileRecord::Kind::Video:
 			return 0;
-		case MediaFile::Kind::Audio:
+		case MediaFileRecord::Kind::Audio:
 			return 1;
-		case MediaFile::Kind::Unknown:
+		case MediaFileRecord::Kind::Unknown:
 			return 2;
 		}
 		return 2;
 	}
 
-	int typeSortRank(MediaFile::Type type)
+	int typeSortRank(MediaFileRecord::Type type)
 	{
 		switch (type)
 		{
-		case MediaFile::Type::Media:
+		case MediaFileRecord::Type::Media:
 			return 0;
-		case MediaFile::Type::Precompute:
+		case MediaFileRecord::Type::Precompute:
 			return 1;
-		case MediaFile::Type::Unknown:
+		case MediaFileRecord::Type::Unknown:
 			return 2;
 		}
 		return 2;
@@ -229,7 +229,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 {
 	if (!index.isValid() || index.row() >= m_files.size() || index.column() >= columnCount())
 		return {};
-	const MediaFile &f = m_files[index.row()];
+	const MediaFileRecord &f = m_files[index.row()];
 	if (m_omfScanEnabled && index.column() == omfScanColumn())
 	{
 		if (role == SortRole)
@@ -321,7 +321,7 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 	if (role == Qt::ToolTipRole && (column == Column::NoDatabase || column == Column::NoReference))
 	{
 		QString explanation = f.dbStatusText().why;
-		if (f.dbStatus == MediaFile::DbStatus::Listed)
+		if (f.dbStatus == MediaFileRecord::DbStatus::Listed)
 			explanation = QStringLiteral("A validated local PMR or MDB entry references this physical file. "
 										 "This does not establish database freshness or sequence usage.");
 		if (column == Column::NoReference && f.isNoDatabase())
@@ -334,17 +334,17 @@ QVariant MediaTableModel::data(const QModelIndex &index, int role) const
 		// Share missing-project and database explanations with the filter tabs.
 		QStringList lines;
 		if (f.hasNoProject())
-			lines << MediaFile::noProjectWhy();
-		if (f.dbStatus != MediaFile::DbStatus::Listed)
+			lines << MediaFileRecord::noProjectWhy();
+		if (f.dbStatus != MediaFileRecord::DbStatus::Listed)
 			lines << f.dbStatusText().label + QStringLiteral(": ") + f.dbStatusText().why;
 		if (!lines.isEmpty())
 			return lines.join(QStringLiteral("\n\n"));
 	}
 	if (role == Qt::ToolTipRole && column == Column::Kind &&
-		f.kind == MediaFile::Kind::Unknown)
+		f.kind == MediaFileRecord::Kind::Unknown)
 		return QStringLiteral("The available metadata has not identified this file as audio or video.");
 	if (role == Qt::ToolTipRole && column == Column::Type &&
-		f.type == MediaFile::Type::Unknown)
+		f.type == MediaFileRecord::Type::Unknown)
 		return QStringLiteral("The available metadata has not identified this file as media or a precompute.");
 	if (role == Qt::TextAlignmentRole && column == Column::SizeMB)
 		return QVariant(int(Qt::AlignRight | Qt::AlignVCenter));

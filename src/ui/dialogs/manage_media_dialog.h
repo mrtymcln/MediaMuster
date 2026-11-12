@@ -1,6 +1,6 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "operations/operation_manager.h"
 #include "operations/operation_plan.h"
 
@@ -42,7 +42,7 @@ public:
 	/// The file-operation engine's conflict policy.
 	using ConflictPolicy = ::ConflictPolicy;
 
-	explicit ManageMediaDialog(const QVector<MediaFile> &files, QWidget *parent = nullptr,
+	explicit ManageMediaDialog(const QVector<MediaFileRecord> &files, QWidget *parent = nullptr,
 							   Operation initialOp = Operation::Copy);
 
 	// MARK: - Result accessors
@@ -71,7 +71,7 @@ private:
 	void startDestinationCheck(bool includeConflicts);
 	void syncGlobalFromPerFile();
 
-	QVector<MediaFile> m_files;
+	QVector<MediaFileRecord> m_files;
 
 	// MARK: - Operation radios
 

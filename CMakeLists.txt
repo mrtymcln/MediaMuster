@@ -133,8 +133,8 @@ set(_app_sources
     "${_app_source_dir}/operations/rebalancer.cpp"
     "${_app_source_dir}/operations/rebalance_planner.cpp"
     "${_app_source_dir}/ui/dialogs/rebalance_dialog.cpp"
-    "${_app_source_dir}/ui/bella_app_scanner.cpp"
-    "${_app_source_dir}/media/bella_media_mapper.cpp"
+    "${_app_source_dir}/ui/scan_manager.cpp"
+    "${_app_source_dir}/ui/scan_result_p.cpp"
 )
 
 if(APPLE)

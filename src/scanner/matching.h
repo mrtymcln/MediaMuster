@@ -96,6 +96,7 @@ namespace Bella
 		MatchPrecomputeCategory precomputeCategory = MatchPrecomputeCategory::Unknown;
 		std::optional<MatchDimensions> resolution;
 		std::optional<MatchFrameRate> frameRate;
+		std::optional<TimingRate> exactFrameRate;
 		std::optional<MatchAudioFrequency> sampleRate;
 		MatchBitDepth bitDepth;
 		FileTiming timing;

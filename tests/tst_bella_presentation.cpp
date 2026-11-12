@@ -1,8 +1,8 @@
 #include "scanner/bella_scanner.h"
-#include "media/bella_media_mapper.h"
 #include "media/media_csv.h"
 #include "ui/media_filter_proxy.h"
 #include "ui/media_table_model.h"
+#include "ui/scan_result_p.h"
 
 #include <QDir>
 #include <QFile>
@@ -20,7 +20,7 @@ namespace
 	{
 		Bella::ScanEntry entry;
 		entry.path = QDir::temp().filePath(QStringLiteral("Avid MediaFiles/MXF/1/") + name);
-		entry.match.metadata.clipName = name;
+		entry.metadata.clipName = name;
 		return entry;
 	}
 
@@ -60,8 +60,8 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 	entry.volumeName = QStringLiteral("Test Volume");
 	entry.volumePath = QDir::tempPath();
 	entry.quarantined = true;
-	entry.match.localReference = Bella::LocalReference::NoReference;
-	auto &m = entry.match.metadata;
+	entry.localReference = Bella::LocalReference::NoReference;
+	auto &m = entry.metadata;
 	m.fileMobId = std::get<Bella::MobId>(Bella::normalizeMobId(
 		QByteArray::fromHex("060a2b340101010501010f10130000001122334455667788060e2b347f7f2a80"),
 		Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian));
@@ -75,12 +75,13 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 	m.type = Bella::MatchType::Precompute;
 	m.resolution = Bella::MatchDimensions{1920, 1080};
 	m.frameRate = Bella::MatchFrameRate{{2997, 100}, Bella::MatchRateMeaning::AvidExactEditRate};
+	m.exactFrameRate = Bella::TimingRate{30000, 1001};
 	m.bitDepth.bits = 10;
 	m.compression.compressionName = QStringLiteral("JPEG2000");
 	m.effects = {QStringLiteral("Dissolve"), QStringLiteral("Blend")};
 	m.timing = {Bella::ExactDuration{0, {30000, 1001}},
 				Bella::TimecodeInputs{{30000, 1001}, 30, Bella::TimecodeMode::DropFrame}};
-	const auto row = bellaMediaFile(entry);
+	const auto row = mediaFileRecordFromScanEntry(entry);
 	QCOMPARE(row.kelpieId, quint64(42));
 	QCOMPARE(row.mediaFolderName, QStringLiteral("1"));
 	QCOMPARE(row.volumeName, entry.volumeName);
@@ -96,6 +97,7 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 	QVERIFY(row.bellaValues && row.bellaValues->frameRate);
 	QCOMPARE(row.bellaValues->frameRate->words.numerator, qint32(2997));
 	QCOMPARE(row.bellaValues->frameRate->words.denominator, qint32(100));
+	QVERIFY(row.bellaValues->frameRateValue);
 	QCOMPARE(row.bellaValues->frameRateValue->numerator, quint64(30000));
 	QCOMPARE(row.bellaValues->frameRateValue->denominator, quint64(1001));
 	QCOMPARE(row.bellaValues->timing.duration->count, qint64(0));
@@ -138,20 +140,21 @@ void TestBellaPresentation::rendersAndExportsOneRow()
 void TestBellaPresentation::durationZeroBlankAndSort()
 {
 	auto video = named(QStringLiteral("zero"));
-	video.match.metadata.kind = Bella::MatchKind::Video;
-	video.match.metadata.timing = {Bella::ExactDuration{0, {25, 1}}, Bella::TimecodeInputs{{25, 1}, 25}};
+	video.metadata.kind = Bella::MatchKind::Video;
+	video.metadata.timing = {Bella::ExactDuration{0, {25, 1}}, Bella::TimecodeInputs{{25, 1}, 25}};
 	auto audio = named(QStringLiteral("rounded zero"));
-	audio.match.metadata.kind = Bella::MatchKind::Audio;
-	audio.match.metadata.timing = {Bella::ExactDuration{1, {48000, 1}}, Bella::TimecodeInputs{{25, 1}, 25}};
+	audio.metadata.kind = Bella::MatchKind::Audio;
+	audio.metadata.timing = {Bella::ExactDuration{1, {48000, 1}}, Bella::TimecodeInputs{{25, 1}, 25}};
 	auto unclocked = named(QStringLiteral("blank"));
-	unclocked.match.metadata.timing.duration = Bella::ExactDuration{12, {48000, 1}};
+	unclocked.metadata.timing.duration = Bella::ExactDuration{12, {48000, 1}};
 	auto longVideo = video;
-	longVideo.match.metadata.clipName = QStringLiteral("long duration");
-	longVideo.match.metadata.timing.duration->count = 100 * 3600 * 25;
-	const auto rounded = bellaMediaFile(audio);
+	longVideo.metadata.clipName = QStringLiteral("long duration");
+	longVideo.metadata.timing.duration->count = 100 * 3600 * 25;
+	const auto rounded = mediaFileRecordFromScanEntry(audio);
 	QCOMPARE(rounded.bellaValues->timing.duration->count, qint64(1));
 	MediaTableModel model;
-	model.setMediaFiles({bellaMediaFile(longVideo), rounded, bellaMediaFile(video), bellaMediaFile(unclocked)});
+	model.setMediaFiles({mediaFileRecordFromScanEntry(longVideo), rounded,
+						 mediaFileRecordFromScanEntry(video), mediaFileRecordFromScanEntry(unclocked)});
 	QCOMPARE(cell(model, 0, Col::Duration), QStringLiteral("100:00:00:00"));
 	QCOMPARE(cell(model, 1, Col::Duration), QStringLiteral("00:00:00:00"));
 	QCOMPARE(cell(model, 2, Col::Duration), QStringLiteral("00:00:00:00"));
@@ -169,13 +172,15 @@ void TestBellaPresentation::durationZeroBlankAndSort()
 void TestBellaPresentation::ratesSortExactly()
 {
 	auto literal = named(QStringLiteral("literal"));
-	literal.match.metadata.kind = Bella::MatchKind::Video;
-	literal.match.metadata.frameRate = Bella::MatchFrameRate{{2997, 100}, Bella::MatchRateMeaning::Literal};
+	literal.metadata.kind = Bella::MatchKind::Video;
+	literal.metadata.frameRate = Bella::MatchFrameRate{{2997, 100}, Bella::MatchRateMeaning::Literal};
+	literal.metadata.exactFrameRate = Bella::TimingRate{2997, 100};
 	auto avid = literal;
-	avid.match.metadata.clipName = QStringLiteral("Avid alias");
-	avid.match.metadata.frameRate->meaning = Bella::MatchRateMeaning::AvidExactEditRate;
+	avid.metadata.clipName = QStringLiteral("Avid alias");
+	avid.metadata.frameRate->meaning = Bella::MatchRateMeaning::AvidExactEditRate;
+	avid.metadata.exactFrameRate = Bella::TimingRate{30000, 1001};
 	MediaTableModel model;
-	model.setMediaFiles({bellaMediaFile(avid), bellaMediaFile(literal)});
+	model.setMediaFiles({mediaFileRecordFromScanEntry(avid), mediaFileRecordFromScanEntry(literal)});
 	QCOMPARE(cell(model, 0, Col::FrameRate), QStringLiteral("29.97"));
 	QCOMPARE(cell(model, 1, Col::FrameRate), QStringLiteral("29.97"));
 	MediaFilterProxy proxy;
@@ -183,19 +188,25 @@ void TestBellaPresentation::ratesSortExactly()
 	proxy.sort(model.columnIndex(Col::FrameRate));
 	QCOMPARE(firstClip(proxy, model), QStringLiteral("literal"));
 
+	auto fractional = named(QStringLiteral("fractional"));
+	fractional.metadata.kind = Bella::MatchKind::Video;
+	fractional.metadata.exactFrameRate = Bella::TimingRate{24000, 1001};
+	model.setMediaFiles({mediaFileRecordFromScanEntry(fractional)});
+	QCOMPARE(cell(model, 0, Col::FrameRate), QStringLiteral("23.98"));
+
 	auto wave = named(QStringLiteral("WAVE"));
-	wave.match.metadata.kind = Bella::MatchKind::Audio;
-	wave.match.metadata.sampleRate = quint32(48000);
+	wave.metadata.kind = Bella::MatchKind::Audio;
+	wave.metadata.sampleRate = quint32(48000);
 	auto aiff = named(QStringLiteral("AIFF"));
-	aiff.match.metadata.kind = Bella::MatchKind::Audio;
+	aiff.metadata.kind = Bella::MatchKind::Audio;
 	const std::array<quint8, 10> extended{0x40, 0x0e, 0xbb, 0x80, 0, 0, 0, 0, 0, 1};
-	aiff.match.metadata.sampleRate = extended;
+	aiff.metadata.sampleRate = extended;
 	auto maximum = wave;
-	maximum.match.metadata.clipName = QStringLiteral("unsigned WAVE");
-	maximum.match.metadata.sampleRate = std::numeric_limits<quint32>::max();
-	const auto widest = bellaMediaFile(maximum);
+	maximum.metadata.clipName = QStringLiteral("unsigned WAVE");
+	maximum.metadata.sampleRate = std::numeric_limits<quint32>::max();
+	const auto widest = mediaFileRecordFromScanEntry(maximum);
 	QCOMPARE(widest.bellaValues->sampleRateValue->numerator, quint64(std::numeric_limits<quint32>::max()));
-	model.setMediaFiles({widest, bellaMediaFile(aiff), bellaMediaFile(wave)});
+	model.setMediaFiles({widest, mediaFileRecordFromScanEntry(aiff), mediaFileRecordFromScanEntry(wave)});
 	QCOMPARE(cell(model, 1, Col::SampleRate), QStringLiteral("48 kHz"));
 	QCOMPARE(cell(model, 2, Col::SampleRate), QStringLiteral("48 kHz"));
 	QVERIFY((std::get<std::array<quint8, 10>>(*model.fileAt(1).bellaValues->sampleRate) == extended));
@@ -207,12 +218,12 @@ void TestBellaPresentation::fixedPointDepthRendersExportsAndSorts()
 {
 	using Depth = Bella::MatchDepthRepresentation;
 	auto fixed12 = named(QStringLiteral("fixed12.mxf"));
-	fixed12.match.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed12_4};
+	fixed12.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed12_4};
 	auto fixed10 = named(QStringLiteral("fixed10.mxf"));
-	fixed10.match.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed10_6};
+	fixed10.metadata.bitDepth = {std::nullopt, 16, Depth::Fixed10_6};
 
 	MediaTableModel model;
-	model.setMediaFiles({bellaMediaFile(fixed12), bellaMediaFile(fixed10)});
+	model.setMediaFiles({mediaFileRecordFromScanEntry(fixed12), mediaFileRecordFromScanEntry(fixed10)});
 	const std::array formats{Depth::Fixed12_4, Depth::Fixed10_6};
 	const QStringList labels{QStringLiteral("12-bit"), QStringLiteral("10-bit")};
 	const MediaCsv::Options options{false};
@@ -243,15 +254,15 @@ void TestBellaPresentation::fixedPointDepthRendersExportsAndSorts()
 void TestBellaPresentation::filtersKeepFullIdentityAndExplicitUnknown()
 {
 	auto entry = named(QStringLiteral("One.mxf"));
-	entry.match.metadata.type = Bella::MatchType::Precompute;
-	entry.match.metadata.fileMobId = std::get<Bella::MobId>(Bella::normalizeMobId(
+	entry.metadata.type = Bella::MatchType::Precompute;
+	entry.metadata.fileMobId = std::get<Bella::MobId>(Bella::normalizeMobId(
 		QByteArray::fromHex("060a2b340101010501010f10130000001122334455667788060e2b347f7f2a80"),
 		Bella::MobIdLayout::Aaf32, Bella::ByteOrder::LittleEndian));
-	auto unknown = bellaMediaFile(entry);
+	auto unknown = mediaFileRecordFromScanEntry(entry);
 	entry = named(QStringLiteral("Two.mxf"));
-	entry.match.metadata.type = Bella::MatchType::Precompute;
-	entry.match.metadata.precomputeCategory = Bella::MatchPrecomputeCategory::RenderedEffects;
-	const auto rendered = bellaMediaFile(entry);
+	entry.metadata.type = Bella::MatchType::Precompute;
+	entry.metadata.precomputeCategory = Bella::MatchPrecomputeCategory::RenderedEffects;
+	const auto rendered = mediaFileRecordFromScanEntry(entry);
 	MediaTableModel model;
 	model.setPrecomputesEnabled(true);
 	model.setMediaFiles({unknown, rendered});

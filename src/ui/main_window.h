@@ -1,10 +1,9 @@
 #pragma once
 
 #include "ui/dialogs/manage_media_dialog.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "media_filter_proxy.h"
-#include "ui/bella_app_scanner.h"
-using AppScanner = BellaAppScanner;
+#include "ui/scan_manager.h"
 #include "media_table_model.h"
 #include "ui/file_operation_controller.h"
 #include "volume_list_widget.h"
@@ -70,7 +69,7 @@ private slots:
 	void scanEverything();
 	void onScanDiscovering(const QString &path);
 	void onScanLogBatch(const QVector<LogMessage> &batch);
-	void onScanFinished(const QVector<MediaFile> &results);
+	void onScanFinished(const QVector<MediaFileRecord> &results);
 	void onScanFailed(const QString &message);
 	void onFilterChanged(int index);
 	void onSearchChanged(const QString &text);
@@ -122,7 +121,7 @@ private:
 
 	void scanListedPaths(const QStringList &paths);
 	void rescanPaths(const QStringList &paths);
-	void startScan(const QVector<AppScanner::Location> &locations);
+	void startScan(const QVector<ScanManager::Location> &locations);
 	void addLog(QtMsgType level, const QString &module, const QString &message);
 	enum class BellaClose
 	{
@@ -137,7 +136,7 @@ private:
 	// MARK: - File operation dispatch
 
 	/// Adapt the selected media rows to the controller's request format.
-	bool dispatchOperation(OperationKind kind, QVector<MediaFile> files,
+	bool dispatchOperation(OperationKind kind, QVector<MediaFileRecord> files,
 						   const QString &dest, bool preserve,
 						   const QHash<QString, ConflictPolicy> &policies);
 
@@ -163,11 +162,11 @@ private:
 
 	/// Only visible selected rows become operation/export inputs. Remembered
 	/// hidden selections are restored to the view when filters permit them.
-	QVector<MediaFile> selectedFiles() const;
+	QVector<MediaFileRecord> selectedFiles() const;
 
 	/// Map visible rows back to the inventory before reading their metadata.
-	const MediaFile &fileForProxyIndex(const QModelIndex &proxyIndex) const;
-	const MediaFile &fileAtProxyRow(int proxyRow) const;
+	const MediaFileRecord &fileForProxyIndex(const QModelIndex &proxyIndex) const;
+	const MediaFileRecord &fileAtProxyRow(int proxyRow) const;
 
 	/// Coalesce ascending visible rows into ranges to reduce selection signals.
 	QItemSelection selectionForRows(const QVector<int> &proxyRows) const;
@@ -196,7 +195,7 @@ private:
 	// MARK: - Owned services
 
 	VolumeDetector *m_volumeDetector;
-	AppScanner *m_scanner;
+	ScanManager *m_scanner;
 	FileOperationController *m_operations;
 
 	MediaTableModel *m_model;
@@ -266,7 +265,7 @@ private:
 	/// Paths found by the last startup/Refresh detection; empty is a valid result.
 	QStringList m_detectedVolumePaths;
 	/// Session-only manual paths and their admitted tree/base meaning.
-	QHash<QString, AppScanner::Location::Kind> m_manualVolumes;
+	QHash<QString, ScanManager::Location::Kind> m_manualVolumes;
 
 	// MARK: - Selection persistence
 

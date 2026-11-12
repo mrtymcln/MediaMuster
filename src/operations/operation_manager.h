@@ -1,7 +1,7 @@
 #pragma once
 
 #include "support/background_job.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 #include "operation_request.h"
 #include "operation_runner.h"
 
@@ -43,8 +43,8 @@ public:
 	void respondTrashFallback(quint64 requestId, bool accepted);
 
 	/// Convert selected rows and frozen scan checks into independent journalled requests.
-	static QVector<OperationItem> itemsFromMediaFiles(const QVector<MediaFile> &files,
-											   const QHash<QString, ConflictPolicy> &policies);
+	static QVector<OperationItem> itemsFromMediaFiles(const QVector<MediaFileRecord> &files,
+													  const QHash<QString, ConflictPolicy> &policies);
 
 signals:
 	void operationResult(const OperationResult &result);

@@ -13,9 +13,9 @@ bytes/graphs. There is no source-storage mode switch or replay pipeline.
 | AVB parsed graph and detailed resolution | One bin load; released before compact file-reference/warning results reach the dialog. |
 | Applied bin-filter operand | Its own compact reference/warning snapshot, independent of removal of the loaded-bin row. |
 
-[`BellaAppScanner`](../../src/ui/bella_app_scanner.cpp) owns background preparation
-and delivery. [`bellaMediaFile()`](../../src/media/bella_media_mapper.cpp) adapts
-selected values and operation-safety receipts. The table does not retain a
+[`ScanManager`](../../src/ui/scan_manager.cpp) runs Bella in the background and
+converts selected values and operation instructions into inventory records before
+delivery. The table does not retain a
 per-field observation history or raw reader graph. Inspecting source properties
 that the final row did not capture requires reopening the source, which may
 have changed or disappeared.

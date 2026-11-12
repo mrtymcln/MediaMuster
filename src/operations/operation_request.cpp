@@ -1,9 +1,9 @@
 #include "operation_request.h"
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 
 // MARK: - Media row conversion
 
-OperationItem operationItemFromMediaFile(const MediaFile &mf)
+OperationItem operationItemFromMediaFile(const MediaFileRecord &mf)
 {
 	OperationItem it;
 	it.src = mf.mediaFilePath;

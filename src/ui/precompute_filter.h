@@ -1,6 +1,6 @@
 #pragma once
 
-#include "media/media_file.h"
+#include "media/media_file_record.h"
 
 #include <QString>
 #include <QVector>
@@ -25,9 +25,9 @@ struct PrecomputeFilterPath
 			   effectCategory == other.effectCategory && effect == other.effect;
 	}
 
-	bool matches(const MediaFile &file) const
+	bool matches(const MediaFileRecord &file) const
 	{
-		return file.type == MediaFile::Type::Precompute &&
+		return file.type == MediaFileRecord::Type::Precompute &&
 			   (precomputeCategory.isEmpty() || precomputeCategory == file.precomputeCategoryFilterLabel()) &&
 			   (effectCategory.isEmpty() || effectCategory == file.effectCategoryDisplay()) &&
 			   (effect.isEmpty() || effect == file.effectDisplay());
@@ -49,7 +49,7 @@ struct PrecomputeFilter
 		return active == other.active && paths == other.paths;
 	}
 
-	bool matches(const MediaFile &file) const
+	bool matches(const MediaFileRecord &file) const
 	{
 		return !active || std::any_of(paths.cbegin(), paths.cend(),
 									  [&file](const PrecomputeFilterPath &path)

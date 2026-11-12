@@ -78,7 +78,8 @@ namespace Bella
 		QString volumeName;
 		bool omfEra = false;
 		bool quarantined = false;
-		MatchResult match;
+		MatchedMetadata metadata;
+		LocalReference localReference = LocalReference::Unresolved;
 		OperationSafety operationSafety;
 	};
 
