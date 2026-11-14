@@ -1,5 +1,6 @@
 #include "mdb_parser.h"
 #include "audio_format_decoder_p.h"
+#include "avid_avc_proxy_flavours_p.h"
 #include "media/avid_text.h"
 
 #include <QByteArrayView>
@@ -1134,12 +1135,6 @@ namespace Bella
 				file.resolution = MdbRaster{{*displayWidth, *displayHeight * multiplier}, recorded ? MdbRasterOrigin::Display : MdbRasterOrigin::Stored};
 				return;
 			}
-			// This is the finite, evidenced proxy table; a small raster alone is not a proxy.
-			struct Proxy
-			{
-				qint64 id, width, height, displayWidth, displayHeight, layout;
-			};
-			constexpr std::array<Proxy, 7> proxies{{{3472, 480, 270, 1920, 540, 2}, {3484, 480, 270, 1920, 1080, 0}, {3487, 480, 270, 1920, 1080, 0}, {3488, 320, 180, 1280, 720, 0}, {3470, 352, 240, 720, 240, 2}, {3491, 352, 240, 720, 240, 2}, {3483, 352, 288, 720, 576, 0}}};
 			const auto expected = QByteArray::fromHex("060e2b340401010d0401020201311101");
 			const auto &facts = file.compression;
 			if (facts.codingState == MdbCodingState::Present && facts.resolutionId &&
@@ -1149,15 +1144,19 @@ namespace Bella
 				const auto sh = dimension(image, descriptor, "OMFI:DIDD:SampledHeight");
 				const auto sx = dimension(image, descriptor, "OMFI:DIDD:SampledXOffset", 0);
 				const auto sy = dimension(image, descriptor, "OMFI:DIDD:SampledYOffset", 0);
-				for (const auto &proxy : proxies)
-					if (*facts.resolutionId == proxy.id && *layout == proxy.layout && *width == proxy.width && *height == proxy.height &&
-						*displayWidth == proxy.displayWidth && *displayHeight == proxy.displayHeight && sw == displayWidth && sh == displayHeight && sx == 0 && sy == 0)
+				for (const auto &flavour : Detail::kAvidAvcProxyFlavours)
+					if (*facts.resolutionId == flavour.resolutionId && *layout == flavour.frameLayout &&
+						*width == flavour.storedWidth && *height == flavour.storedHeight &&
+						*displayWidth == flavour.sampledDisplayWidth && *displayHeight == flavour.sampledDisplayHeight &&
+						sw == displayWidth && sh == displayHeight && sx == 0 && sy == 0)
 					{
 						file.resolution = MdbRaster{*facts.namingGeometry, MdbRasterOrigin::VerifiedProxy};
 						return;
 					}
 			}
-			image.problem(descriptor, "OMFI:DIDD:DisplayWidth", QStringLiteral("Visible rectangle is outside Stored and is not a verified proxy configuration."));
+			image.problem(descriptor, "OMFI:DIDD:DisplayWidth",
+						  QStringLiteral("Visible rectangle extends outside the stored picture without matching "
+										 "a recognised AVC proxy flavour."));
 		}
 
 		void pictureDepth(const Image &image, quint32 descriptor, MdbFileRecord &file, QByteArrayView cls)

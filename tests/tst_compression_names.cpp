@@ -367,7 +367,7 @@ private slots:
 		QFETCH(QByteArray, label);
 		QFETCH(int, depth);
 		QFETCH(int, horizontal);
-		// Authored formatter inputs: valid HD geometry cannot establish an unknown coding profile.
+		// Valid HD geometry cannot identify the DNx flavour of an unrecognised coding label.
 		auto facts = dnxHqxFacts();
 		facts.codingLabel = label;
 		facts.rawComponentDepth = depth;

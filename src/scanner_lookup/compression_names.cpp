@@ -53,7 +53,7 @@ namespace Bella::Lookup
 			{"ProRes RAW HQ", "060e2b34040101030e04410202020000"},
 
 			// AVC Intra, XAVC, AVC Intra SD, AVC Long-GOP.
-			// Intra SD needs bitrate & raster to determine a profile.
+			// AVC Intra SD needs bitrate and raster to distinguish its flavours.
 			{"AVC Intra", "060e2b340401010a0401020201323001"},
 			{"AVC Intra", "060e2b340401010a0401020201323101"},
 			{"AVC Intra", "060e2b340401010a0401020201323102"},

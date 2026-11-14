@@ -242,7 +242,7 @@ void TestBellaMediaLabels::legacyDnxRateQualification_data()
 	QTest::newRow("finite exact decimal pair") << 0 << true;
 	QTest::newRow("same supported pair with Rational encoding") << 1 << true;
 	QTest::newRow("unregistered ResolutionID cannot qualify decimal") << 2 << false;
-	QTest::newRow("ResolutionID and coding profile disagree") << 3 << false;
+	QTest::newRow("ResolutionID and coding label indicate different DNx flavours") << 3 << false;
 	QTest::newRow("Duration multiplier alias is outside naming rule") << 4 << false;
 	QTest::newRow("nearby decimal is not exact") << 5 << false;
 	QTest::newRow("absent coding permits narrow known ResolutionID recovery") << 6 << true;
@@ -629,8 +629,8 @@ void TestBellaMediaLabels::contradictoryAudioSummaryKeepsDnxNames()
 {
 	auto mdb = mdbHqx();
 	auto omf = omfHqx();
-	// Deliberately conflicting already-qualified same-source facts. Compression
-	// cannot choose DNx over IEEE float; the independent profile aliases survive.
+	// The conflicting DNx and IEEE float facts leave Compression blank.
+	// The DNx flavour aliases survive.
 	mdb.compression.audioEncoding = Bella::MdbAudioEncoding::IeeeFloat;
 	omf.compression.audioEncoding = Bella::OmfAudioEncoding::IeeeFloat;
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf)})

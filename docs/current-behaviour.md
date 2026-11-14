@@ -361,7 +361,7 @@ display `unknown`. Unavailable Precompute Category and technical values display 
 
 **Resolution** shows the visible picture raster, using valid descriptor crops and
 format-correct field handling. Recorded display geometry can remove storage padding
-(1920×1088 to 1920×1080). Verified Avid small-proxy configurations use their actual
+(1920×1088 to 1920×1080). Verified Avid AVC proxy flavours use their actual
 stored dimensions, such as 480×270 or 320×180, with the inference made during scanning.
 Unexplained invalid geometry stays unresolved; it does not independently trigger
 a header read. Padding is never trimmed by a universal height rule. Stored,

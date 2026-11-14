@@ -30,6 +30,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 #include "mxf_parser.h"
+#include "avid_avc_proxy_flavours_p.h"
 #include "identity_check_p.h"
 
 #include <QByteArrayView>
@@ -996,23 +997,11 @@ namespace Bella
 			const auto id = techInteger(image, descriptor, "GenericPictureEssenceDescriptor.ResolutionID");
 			if (!id)
 				return false;
-			struct Proxy
-			{
-				qint64 id, width, height, activeWidth, activeHeight;
-				quint8 layout;
-			};
-			// Canonical, individually verified source configurations; no approximate match.
-			static constexpr std::array<Proxy, 7> profiles = {{{3472, 480, 270, 1920, 540, 2},
-															   {3484, 480, 270, 1920, 1080, 0},
-															   {3487, 480, 270, 1920, 1080, 0},
-															   {3488, 320, 180, 1280, 720, 0},
-															   {3470, 352, 240, 720, 240, 2},
-															   {3491, 352, 240, 720, 240, 2},
-															   {3483, 352, 288, 720, 576, 0}}};
-			for (const auto &p : profiles)
-				if (*id == p.id && layout == p.layout && *stored.width == p.width && *stored.height == p.height &&
-					*sampled.width == p.activeWidth && *sampled.height == p.activeHeight &&
-					*display.width == p.activeWidth && *display.height == p.activeHeight)
+			for (const auto &flavour : Detail::kAvidAvcProxyFlavours)
+				if (*id == flavour.resolutionId && layout == flavour.frameLayout &&
+					*stored.width == flavour.storedWidth && *stored.height == flavour.storedHeight &&
+					*sampled.width == flavour.sampledDisplayWidth && *sampled.height == flavour.sampledDisplayHeight &&
+					*display.width == flavour.sampledDisplayWidth && *display.height == flavour.sampledDisplayHeight)
 					return true;
 			return false;
 		}
@@ -1068,8 +1057,8 @@ namespace Bella
 			else
 				image.problem(
 					descriptor, "GenericPictureEssenceDescriptor.StoredWidth",
-					QStringLiteral("The picture rectangles are incomplete, outside their required parents or not a "
-								   "verified proxy configuration."));
+					QStringLiteral("Picture rectangles must be complete and either fit inside their required parents "
+								   "or match a recognised AVC proxy flavour."));
 		}
 
 		struct TechDepth
@@ -1318,7 +1307,7 @@ namespace Bella
 				}
 			}
 			// These supported frame-based forms use the explicit own clock directly.
-			// The three exact SingleField proxy configurations (3472/3470/3491) also
+			// The three SingleField proxy flavours (3472/3470/3491) also
 			// record one count per frame, as checked against their own track clocks
 			// and paired MDB counts. Unestablished forms keep the raw
 			// count/rate without inventing a field-to-frame conversion or invalid enum.

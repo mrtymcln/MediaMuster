@@ -14,6 +14,10 @@ facts. Container wrapping is not coding: the BWF label ending
 `0d01030102060100` is not a PCM compression identifier. A descriptive
 AIFF-C compression-name string is not its compressionType authority.
 
+MediaMuster uses **flavour** for a codec variant, such as `DNxHD HQX` or an Avid
+AVC proxy configuration. **Profile** retains its formal codec meaning, as in
+AVC Constrained Baseline Profile.
+
 ## Naming rules
 
 Use exact established coding/legacy identifiers with the correctly associated
@@ -42,14 +46,13 @@ These scheme names are MediaMuster terminology, not recorded Avid property names
 | Scheme | Example | Required evidence |
 | --- | --- | --- |
 | NewDnx | `DNx HQX` | Established quality level/current unified brand. |
-| OldDnx | `DNxHD HQX` or `DNxHR HQX` | Verified encoded historical profile. |
+| OldDnx | `DNxHD HQX` or `DNxHR HQX` | Verified historical DNx flavour. |
 | ReallyOldDnx | `DNxHD 175x` | Exact supported HD operating point, raster/layout/sampling/depth and clock. No numbered HR alias. |
 
-HD dimensions do not establish an HD profile: resolution-independent DNxHR can
-also be HD-sized. Nominal historic names are not rounded bitrates: Avid's 2012
-tables call 1080p/23.976 or 24 HQX `175x` while listing 176 Mbps, and 1080p/25
-`185x` while listing 184 Mbps. Never select a nearest nominal name from bitrate,
-resolution or the creating application's version.
+DNxHR can share HD dimensions with DNxHD because DNxHR is resolution-independent.
+Avid's 2012 tables pair `175x` with 176 Mbps for 1080p/23.976 or 24 HQX, and
+`185x` with 184 Mbps for 1080p/25. Never select a nearest nominal name from
+bitrate, resolution or the creating application's version.
 
 The supported legacy OMF/MDB decimal clock spellings are a **finite naming rule**:
 
@@ -58,20 +61,21 @@ The supported legacy OMF/MDB decimal clock spellings are a **finite naming rule*
 | `2997/100` | 1235, 1237, 1238, 1241, 1242, 1243, 1253 | `30000/1001` |
 | `23976/1000` | 1235, 1237, 1238, 1250, 1251, 1252, 1253 | `24000/1001` |
 
-All other profile/raster/layout/depth/subsampling checks still apply. These
-aliases do not change recorded Frame Rate or Duration fractions and do not
-reuse the broader timing interpreter. Unsupported nearby clocks get no alias.
+All other checks for the coding label, raster, layout, depth and subsampling
+still apply. These aliases do not change recorded Frame Rate or Duration
+fractions and do not reuse the broader timing interpreter. Unsupported nearby
+clocks get no alias.
 An installed OMF slate with CID/resolution ID 1243, separate 1920×540 fields,
 eight-bit 4:2:2 and `2997/100` corroborates the DNxHD 220 operating point;
 the filename is not the evidence for that name.
 
 ## Uncompressed, alpha and audio
 
-For complete DNxUncompressed coding ULs in **RDD 50 Table 5**, interpret coding
-variant and depth together. These suffixes summarize those full labels; they
-are not suffix-matching rules for arbitrary coding identifiers.
+For complete DNxUncompressed coding ULs in **RDD 50 Table 5**, interpret the
+coding flavour and component depth together. The suffixes below summarise the
+full labels in that table. Require a full-label match for every entry.
 
-| Full-label variant suffix | Component depth | Representation |
+| Coding-label suffix | Component depth | Representation |
 | --- | --- | --- |
 | `03070100` | 8, 10, 12, 16 | Integer |
 | `03070100` | 253 | 16-bit half float |
@@ -97,6 +101,7 @@ floating-point encoding of its frequency. Unknown coding does not become PCM.
 - [Avid DNx naming/data rates](https://kb.avid.com/pkb/articles/en_US/Knowledge/Avid-DNx-naming-scheme-and-data-rates) and [Media Composer 2025.12 terminology](https://www.avid.com/resource-center/whats-new-avid-media-composer-202512).
 - [SMPTE RDD 50:2019](https://pub.smpte.org/pub/rdd50/rdd50-2019.pdf), section 9/Table 5 and sections 10.2–10.3: DNxUncompressed labels and component representation. It is a Registered Disclosure Document, not a SMPTE Standard.
 - [SMPTE ST 2019-1:2016](https://pub.smpte.org/latest/st2019-1/st2019-1-2016.pdf), section 7.2.4 and Annexes C/H: compressed VC-3 CID/profile distinctions; not exhaustive later-profile coverage.
+- Table 4 defines the formal AVC profile names. [SMPTE ST 381-3:2025](https://pub.smpte.org/pub/st381-3/st381-3-2025.pdf#page=9)
 - [BBC libMXF labels](https://github.com/bbc/bmx/blob/main/deps/libMXF/mxf/mxf_labels_and_keys.h): coding/container distinctions and D-10 bitrate ordering.
 - [Original OMF toolkit](https://github.com/LWKS-Software/omfkt22), `omUtils.c`: historical `2997/100` conversion spelling, not a general rate-equivalence rule.
 - [Avid MediaDirector release notes](https://resources.avid.com/SupportFiles/attach/ReleaseNotes_MediaDirector_v1_0_1.pdf), PDF page 5: DNxHD 220 at 1080i/29.97.

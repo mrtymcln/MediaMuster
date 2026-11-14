@@ -7,9 +7,9 @@ namespace Bella::Lookup
 {
 	namespace
 	{
-		struct DnxProfile
+		struct DnxFlavour
 		{
-			const char *profileTier;
+			const char *flavourName;
 			bool isDnxHr;
 			int rasterWidth;
 			int rasterHeight;
@@ -17,11 +17,11 @@ namespace Bella::Lookup
 			QByteArray codingLabel;
 		};
 
-		// VC-3 profile labels from ST 2019-1:2016 and Avid's 2012/2026 white papers.
-		// These identify the profile without relying on Avid's ResolutionID.
+		// VC-3 coding labels from ST 2019-1:2016 and Avid's 2012/2026 white papers.
+		// These identify the DNx flavour without relying on Avid's ResolutionID.
 		// HD raster and layout constrain numbered aliases. Layout 0 is progressive; 1 is interlaced.
-		static const std::array<DnxProfile, 16> kDnxProfiles{{
-			// Level, HR, width, height, layout, coding label.
+		static const std::array<DnxFlavour, 16> kDnxFlavours{{
+			// Flavour name, HR, width, height, layout, coding label.
 			// DNxHD
 			{"444", false, 1920, 1080, 0, QByteArray::fromHex("060e2b340401010d0401020271160000")},
 			{"HQ", false, 1920, 1080, 0, QByteArray::fromHex("060e2b340401010a0401020271040000")},
@@ -49,7 +49,7 @@ namespace Bella::Lookup
 			int rasterHeight;
 			int frameLayout;
 			MediaRate frameRate;
-			const char *profile444Suffix;
+			const char *flavour444Suffix;
 			const char *hqSuffix;
 			const char *hqxSuffix;
 			const char *lbSuffix;
@@ -84,29 +84,29 @@ namespace Bella::Lookup
 			{1920, 1080, 1, {30000, 1001}, "", "220", "220x", "", "145"},
 		}};
 
-		QString numberedDnxName(const DnxProfile &profile, const CompressionFacts &facts)
+		QString numberedDnxName(const DnxFlavour &flavour, const CompressionFacts &facts)
 		{
-			const auto level = QLatin1String(profile.profileTier);
-			const int expectedDepth = level == QLatin1String("HQX") || level == QLatin1String("444") ? 10 : 8;
-			const int expectedHorizontal = level == QLatin1String("444") ? 1 : 2;
-			if (profile.isDnxHr || !facts.frameLayout || facts.rawComponentDepth != expectedDepth ||
+			const auto flavourName = QLatin1String(flavour.flavourName);
+			const int expectedDepth = flavourName == QLatin1String("HQX") || flavourName == QLatin1String("444") ? 10 : 8;
+			const int expectedHorizontal = flavourName == QLatin1String("444") ? 1 : 2;
+			if (flavour.isDnxHr || !facts.frameLayout || facts.rawComponentDepth != expectedDepth ||
 				facts.horizontalSubsampling != expectedHorizontal || facts.verticalSubsampling != 1 ||
-				profile.frameLayout != *facts.frameLayout || profile.rasterWidth != facts.rasterSize.first ||
-				profile.rasterHeight != facts.rasterSize.second)
+				flavour.frameLayout != *facts.frameLayout || flavour.rasterWidth != facts.rasterSize.first ||
+				flavour.rasterHeight != facts.rasterSize.second)
 				return {};
 			for (const auto &point : kDnxOperatingPoints)
 			{
 				if (facts.rasterSize.first != point.rasterWidth || facts.rasterSize.second != point.rasterHeight ||
 					*facts.frameLayout != point.frameLayout || !facts.namingRate.sameRate(point.frameRate))
 					continue;
-				const char *reallyOldDnxSuffix = point.profile444Suffix;
-				if (level == QLatin1String("LB"))
+				const char *reallyOldDnxSuffix = point.flavour444Suffix;
+				if (flavourName == QLatin1String("LB"))
 					reallyOldDnxSuffix = point.lbSuffix;
-				else if (level == QLatin1String("SQ"))
+				else if (flavourName == QLatin1String("SQ"))
 					reallyOldDnxSuffix = point.sqSuffix;
-				else if (level == QLatin1String("HQ"))
+				else if (flavourName == QLatin1String("HQ"))
 					reallyOldDnxSuffix = point.hqSuffix;
-				else if (level == QLatin1String("HQX"))
+				else if (flavourName == QLatin1String("HQX"))
 					reallyOldDnxSuffix = point.hqxSuffix;
 				return reallyOldDnxSuffix[0] ? QStringLiteral("DNxHD %1").arg(QLatin1String(reallyOldDnxSuffix)) : QString{};
 			}
@@ -125,7 +125,7 @@ namespace Bella::Lookup
 			{"DNx HQ", QByteArray::fromHex("060e2b34040101030e04410101050200")},
 			{"DNx SQ", QByteArray::fromHex("060e2b34040101030e04410101050300")},
 			{"DNxStitched AVC-I 4:2:2", QByteArray::fromHex("060e2b34040101030e04410101060100")},
-			// These thin-raster DNx profiles don't have numbered aliases.
+			// These thin-raster DNx flavours don't have numbered aliases.
 			{"DNx TR", QByteArray::fromHex("060e2b340401010d04010202710a0000")},
 			{"DNx TR", QByteArray::fromHex("060e2b340401010d0401020271180000")},
 			{"DNx TR", QByteArray::fromHex("060e2b340401010d0401020271190000")},
@@ -140,7 +140,7 @@ namespace Bella::Lookup
 			if (facts.codingLabel == kDnxUncompressedLegacyRleCodingLabel)
 				return QStringLiteral("DNxUncompressed");
 
-			// RLE alpha has 8-bit and 16-bit variants. Keep the display name at the family level.
+			// RLE alpha has 8-bit and 16-bit flavours. Keep the display name at the family level.
 			if (facts.codingLabel == kDnxUncompressedCodingLabel && (facts.alphaChannelBitDepth == 8 || facts.alphaChannelBitDepth == 16))
 				return QStringLiteral("DNxUncompressed");
 
@@ -157,14 +157,14 @@ namespace Bella::Lookup
 	CompressionNames dnxNames(const CompressionFacts &facts)
 	{
 		CompressionNames result;
-		for (const auto &profile : kDnxProfiles)
+		for (const auto &flavour : kDnxFlavours)
 		{
-			if (facts.codingLabel != profile.codingLabel)
+			if (facts.codingLabel != flavour.codingLabel)
 				continue;
-			result.newDnx = QStringLiteral("DNx %1").arg(QLatin1String(profile.profileTier));
+			result.newDnx = QStringLiteral("DNx %1").arg(QLatin1String(flavour.flavourName));
 			result.oldDnx = QStringLiteral("DNx%1 %2")
-								.arg(profile.isDnxHr ? QLatin1String("HR") : QLatin1String("HD"), QLatin1String(profile.profileTier));
-			result.reallyOldDnx = numberedDnxName(profile, facts);
+								.arg(flavour.isDnxHr ? QLatin1String("HR") : QLatin1String("HD"), QLatin1String(flavour.flavourName));
+			result.reallyOldDnx = numberedDnxName(flavour, facts);
 			result.compressionName = result.newDnx;
 			if (!result.reallyOldDnx.isEmpty())
 				result.compressionName += QStringLiteral(" [%1]").arg(result.reallyOldDnx);
