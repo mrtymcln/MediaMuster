@@ -1,12 +1,12 @@
 #include "omf_parser.h"
 #include "avid_avc_proxy_flavours_p.h"
+#include "file_stamp_p.h"
 #include "identity_check_p.h"
 #include "audio_format_decoder_p.h"
 #include "wave_aiff_parser_p.h"
 #include "media/avid_text.h"
 
 #include <QByteArrayView>
-#include <QDateTime>
 #include <QFile>
 #include <QFileInfo>
 #include <QHash>
@@ -2581,17 +2581,13 @@ namespace Bella
 
 		// MARK: - File capture checks
 
-		struct Stamp
-		{
-			std::optional<qint64> size;
-			QDateTime modified;
-		};
-		Stamp observe(const QString &path)
+		Detail::FileStamp observe(const QString &path)
 		{
 			const QFileInfo info(path);
-			return info.exists()
-					   ? Stamp{info.size() >= 0 ? std::optional<qint64>(info.size()) : std::nullopt, info.lastModified()}
-					   : Stamp{};
+			if (!info.exists())
+				return {};
+			const auto size = info.size();
+			return {size >= 0 ? std::optional<qint64>(size) : std::nullopt, info.lastModified()};
 		}
 	} // namespace
 
@@ -2639,9 +2635,8 @@ namespace Bella
 					  [&](const Image &image)
 					  { extract(image, includePrecomputeDetails, report); });
 		const auto after = observe(path);
-		const bool sizes = before.size && after.size;
-		const bool dates = before.modified.isValid() && after.modified.isValid();
-		if ((sizes && before.size != after.size) || (dates && before.modified != after.modified))
+		const auto comparison = Detail::compareFileStamps(before, after);
+		if (comparison.hasChanged())
 		{
 			report.sizeDateCheck = OmfCheckResult::Changed;
 			report.nativeAudioInformation = {};
@@ -2652,11 +2647,11 @@ namespace Bella
 		}
 		else
 		{
-			report.sizeDateCheck = sizes && dates ? OmfCheckResult::Verified : OmfCheckResult::Unverified;
-			if (!sizes)
+			report.sizeDateCheck = comparison.isVerified() ? OmfCheckResult::Verified : OmfCheckResult::Unverified;
+			if (!comparison.canCompareSize)
 				report.problemNotes.append(QStringLiteral("Size check unavailable; otherwise usable OMF/native "
 														  "metadata remains unverified."));
-			if (!dates)
+			if (!comparison.canCompareModificationTime)
 				report.problemNotes.append(QStringLiteral("Modification-time check unavailable; otherwise "
 														  "usable OMF/native metadata remains unverified."));
 		}

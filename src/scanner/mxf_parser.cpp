@@ -31,6 +31,7 @@
  */
 #include "mxf_parser.h"
 #include "avid_avc_proxy_flavours_p.h"
+#include "file_stamp_p.h"
 #include "identity_check_p.h"
 
 #include <QByteArrayView>
@@ -2572,17 +2573,13 @@ namespace Bella
 
 		// MARK: - File capture checks
 
-		struct Stamp
-		{
-			std::optional<qint64> size;
-			QDateTime modified;
-		};
-		Stamp observe(const QString &path)
+		Detail::FileStamp observe(const QString &path)
 		{
 			const QFileInfo info(path);
-			return info.exists() ? Stamp{info.size() >= 0 ? std::optional<qint64>(info.size()) : std::nullopt,
-										 info.lastModified()}
-								 : Stamp{};
+			if (!info.exists())
+				return {};
+			const auto size = info.size();
+			return {size >= 0 ? std::optional<qint64>(size) : std::nullopt, info.lastModified()};
 		}
 	} // namespace
 
@@ -2659,20 +2656,19 @@ namespace Bella
 		report.reading = input.failure == MxfReadResult::NotRead ? MxfReadResult::Completed : input.failure;
 		if (!input.explanation.isEmpty())
 			report.problemNotes.append(input.explanation);
-		const bool sizes = before.size && after.size;
-		const bool dates = before.modified.isValid() && after.modified.isValid();
-		if ((sizes && before.size != after.size) || (dates && before.modified != after.modified))
+		const auto comparison = Detail::compareFileStamps(before, after);
+		if (comparison.hasChanged())
 		{
 			report.sizeDateCheck = MxfCheckResult::Changed;
 			if (report.reading != MxfReadResult::Cancelled)
 				report.reading = MxfReadResult::Changed;
-			if (sizes && before.size != after.size)
+			if (comparison.sizeChanged)
 				report.problemNotes.append(
 					QStringLiteral(
 						"MXF size changed during metadata reading from %1 to %2 bytes; its data is excluded.")
-						.arg(*before.size)
-						.arg(*after.size));
-			if (dates && before.modified != after.modified)
+						.arg(*before.sizeBytes)
+						.arg(*after.sizeBytes));
+			if (comparison.modificationTimeChanged)
 				report.problemNotes.append(
 					QStringLiteral(
 						"MXF modification time changed during metadata reading from %1 to %2; its data is excluded.")
@@ -2681,11 +2677,11 @@ namespace Bella
 		}
 		else
 		{
-			report.sizeDateCheck = sizes && dates ? MxfCheckResult::Verified : MxfCheckResult::Unverified;
-			if (!sizes)
+			report.sizeDateCheck = comparison.isVerified() ? MxfCheckResult::Verified : MxfCheckResult::Unverified;
+			if (!comparison.canCompareSize)
 				report.problemNotes.append(QStringLiteral("Size check unavailable before or after MXF reading; "
 														  "otherwise usable metadata remains unverified."));
-			if (!dates)
+			if (!comparison.canCompareModificationTime)
 				report.problemNotes.append(QStringLiteral("Modification-time check unavailable before or after MXF "
 														  "reading; otherwise usable metadata remains unverified."));
 		}

@@ -1,6 +1,7 @@
 #include "mdb_parser.h"
 #include "audio_format_decoder_p.h"
 #include "avid_avc_proxy_flavours_p.h"
+#include "file_stamp_p.h"
 #include "media/avid_text.h"
 
 #include <QByteArrayView>
@@ -2032,15 +2033,13 @@ namespace Bella
 
 		// MARK: - File capture checks
 
-		struct Stamp
-		{
-			std::optional<qint64> size;
-			QDateTime modified;
-		};
-		Stamp observe(const QString &path)
+		Detail::FileStamp observe(const QString &path)
 		{
 			const QFileInfo info(path);
-			return info.exists() ? Stamp{info.size() >= 0 ? std::optional<qint64>(info.size()) : std::nullopt, info.lastModified()} : Stamp{};
+			if (!info.exists())
+				return {};
+			const auto size = info.size();
+			return {size >= 0 ? std::optional<qint64>(size) : std::nullopt, info.lastModified()};
 		}
 
 		bool cancelled(MdbReport &report, const std::atomic_bool &stop)
@@ -2079,25 +2078,27 @@ namespace Bella
 			return report;
 		const auto after = observe(path);
 		source.close();
-		const bool sizes = before.size && after.size;
-		const bool dates = before.modified.isValid() && after.modified.isValid();
-		if ((sizes && before.size != after.size) || (dates && before.modified != after.modified))
+		const auto comparison = Detail::compareFileStamps(before, after);
+		if (comparison.hasChanged())
 		{
 			report.reading = MdbReadResult::Changed;
 			report.sizeDateCheck = MdbCheckResult::Changed;
-			if (sizes && before.size != after.size)
-				report.problemNotes.append(QStringLiteral("MDB size changed during capture from %1 to %2 bytes; its data is excluded.").arg(*before.size).arg(*after.size));
-			if (dates && before.modified != after.modified)
+			if (comparison.sizeChanged)
+				report.problemNotes.append(QStringLiteral("MDB size changed during capture from %1 to %2 bytes; its data is excluded.")
+											   .arg(*before.sizeBytes)
+											   .arg(*after.sizeBytes));
+			if (comparison.modificationTimeChanged)
 				report.problemNotes.append(QStringLiteral("MDB modification time changed during capture from %1 to %2; its data is excluded.")
 											   .arg(before.modified.toUTC().toString(Qt::ISODateWithMs), after.modified.toUTC().toString(Qt::ISODateWithMs)));
 			return report;
 		}
-		report.sizeDateCheck = sizes && dates ? MdbCheckResult::Verified : MdbCheckResult::Unverified;
-		if (!sizes)
+		report.sizeDateCheck = comparison.isVerified() ? MdbCheckResult::Verified : MdbCheckResult::Unverified;
+		if (!comparison.canCompareSize)
 			report.problemNotes.append(QStringLiteral("Size check unavailable before or after capture; otherwise usable metadata remains unverified."));
-		if (!dates)
+		if (!comparison.canCompareModificationTime)
 			report.problemNotes.append(QStringLiteral("Modification-time check unavailable before or after capture; otherwise usable metadata remains unverified."));
-		const bool wrongSize = (before.size && capture.size() != *before.size) || (after.size && capture.size() != *after.size);
+		const bool wrongSize = (before.sizeBytes && capture.size() != *before.sizeBytes) ||
+							   (after.sizeBytes && capture.size() != *after.sizeBytes);
 		if (readFailed || wrongSize)
 		{
 			report.reading = MdbReadResult::IoError;

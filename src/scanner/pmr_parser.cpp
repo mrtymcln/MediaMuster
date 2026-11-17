@@ -1,5 +1,6 @@
 #include "pmr_parser.h"
 
+#include "file_stamp_p.h"
 #include "media/avid_text.h"
 #include <QByteArrayView>
 #include <QFile>
@@ -398,17 +399,20 @@ namespace Bella
 		{
 			return stamp.sizeBytes && *stamp.sizeBytes >= 0;
 		}
+
+		PmrCheckResult pmrCheckResult(const Detail::FileStampComparison &comparison)
+		{
+			if (comparison.hasChanged())
+				return PmrCheckResult::Changed;
+			return comparison.isVerified() ? PmrCheckResult::Verified : PmrCheckResult::Unverified;
+		}
 	}
 
 	// MARK: - Stamp verification
 
 	PmrCheckResult Detail::comparePmrStamps(const PmrStamp &before, const PmrStamp &after)
 	{
-		const bool sizesAvailable = availableSize(before) && availableSize(after);
-		const bool datesAvailable = before.modified.isValid() && after.modified.isValid();
-		if ((sizesAvailable && before.sizeBytes != after.sizeBytes) || (datesAvailable && before.modified != after.modified))
-			return PmrCheckResult::Changed;
-		return sizesAvailable && datesAvailable ? PmrCheckResult::Verified : PmrCheckResult::Unverified;
+		return pmrCheckResult(compareFileStamps({before.sizeBytes, before.modified}, {after.sizeBytes, after.modified}));
 	}
 
 	// MARK: - PMR parsing
@@ -438,28 +442,31 @@ namespace Bella
 			return report;
 		const auto after = observeStamp(path);
 		source.close();
-		report.sizeDateCheck = Detail::comparePmrStamps(report.source.capturedStamp, after);
+		const auto &before = report.source.capturedStamp;
+		const auto comparison = Detail::compareFileStamps({before.sizeBytes, before.modified}, {after.sizeBytes, after.modified});
+		report.sizeDateCheck = pmrCheckResult(comparison);
 		if (report.sizeDateCheck == PmrCheckResult::Changed)
 		{
 			report.reading = PmrReadResult::Changed;
-			if (availableSize(report.source.capturedStamp) && availableSize(after) && report.source.capturedStamp.sizeBytes != after.sizeBytes)
+			if (comparison.sizeChanged)
 				explain(report, QStringLiteral("PMR size changed during capture from %1 to %2 bytes; its data is excluded.")
-									.arg(*report.source.capturedStamp.sizeBytes)
+									.arg(*before.sizeBytes)
 									.arg(*after.sizeBytes));
-			if (report.source.capturedStamp.modified.isValid() && after.modified.isValid() && report.source.capturedStamp.modified != after.modified)
+			if (comparison.modificationTimeChanged)
 				explain(report, QStringLiteral("PMR modification time changed during capture from %1 to %2; its data is excluded.")
-									.arg(report.source.capturedStamp.modified.toUTC().toString(Qt::ISODateWithMs),
+									.arg(before.modified.toUTC().toString(Qt::ISODateWithMs),
 										 after.modified.toUTC().toString(Qt::ISODateWithMs)));
 			return report;
 		}
 		if (report.sizeDateCheck == PmrCheckResult::Unverified)
 		{
-			if (!availableSize(report.source.capturedStamp) || !availableSize(after))
+			if (!comparison.canCompareSize)
 				explain(report, QStringLiteral("Size check unavailable before or after capture; otherwise usable metadata remains unverified."));
-			if (!report.source.capturedStamp.modified.isValid() || !after.modified.isValid())
+			if (!comparison.canCompareModificationTime)
 				explain(report, QStringLiteral("Modification-time check unavailable before or after capture; otherwise usable metadata remains unverified."));
 		}
-		const bool wrongSize = (availableSize(report.source.capturedStamp) && capture.size() != *report.source.capturedStamp.sizeBytes) || (availableSize(after) && capture.size() != *after.sizeBytes);
+		const bool wrongSize = (availableSize(before) && capture.size() != *before.sizeBytes) ||
+							   (availableSize(after) && capture.size() != *after.sizeBytes);
 		if (readFailed || wrongSize)
 		{
 			report.reading = PmrReadResult::IoError;

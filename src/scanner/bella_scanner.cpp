@@ -2,6 +2,7 @@
 
 #include "bella_scanner_p.h"
 #include "discovery_p.h"
+#include "file_stamp_p.h"
 #include "matching.h"
 #include "read_jobs_p.h"
 
@@ -35,16 +36,13 @@ namespace Bella
 	Detail::PhysicalCheck Detail::comparePhysical(const ScanEntry &entry,
 												  const PhysicalObservation &observed)
 	{
-		const bool sizes = entry.sizeBytes && observed.sizeBytes &&
-						   *entry.sizeBytes >= 0 && *observed.sizeBytes >= 0;
-		const bool dates = entry.modified.isValid() && observed.modified.isValid();
-		if (observed.presence == PhysicalPresence::Replaced ||
-			(sizes && entry.sizeBytes != observed.sizeBytes) ||
-			(dates && entry.modified != observed.modified))
+		const auto comparison = compareFileStamps({entry.sizeBytes, entry.modified},
+												  {observed.sizeBytes, observed.modified});
+		if (observed.presence == PhysicalPresence::Replaced || comparison.hasChanged())
 			return PhysicalCheck::Changed;
 		if (observed.presence != PhysicalPresence::File)
 			return PhysicalCheck::Unavailable;
-		return sizes && dates ? PhysicalCheck::Verified : PhysicalCheck::Unverified;
+		return comparison.isVerified() ? PhysicalCheck::Verified : PhysicalCheck::Unverified;
 	}
 
 	namespace
