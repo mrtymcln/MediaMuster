@@ -6,7 +6,6 @@
 
 #include <QObject>
 #include <QString>
-#include <QVector>
 
 #include <atomic>
 

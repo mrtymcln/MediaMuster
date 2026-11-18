@@ -1,7 +1,6 @@
 #include "operation_recovery.h"
 #include "file_check.h"
 #include "operation_runner.h"
-#include <QDir>
 #include <QHash>
 #include <QSet>
 #include <utility>

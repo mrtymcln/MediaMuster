@@ -1,10 +1,7 @@
 #include "volume_identity.h"
 
-#include "storage/file_sync.h"
-
 #include <QDir>
 #include <QFile>
-#include <QFileInfo>
 #include <QStorageInfo>
 #include <QUrl>
 #include <QVector>

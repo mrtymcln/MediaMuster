@@ -70,10 +70,6 @@ public:
 	}
 	OperationStamp stamp() const;
 	bool stillAt(const QString &path, const OperationStamp &expected) const;
-	bool protectedFromWriters() const
-	{
-		return m_protected;
-	}
 #ifndef Q_OS_WIN
 	bool preserveMetadataFrom(OperationFile &source, QString &error);
 #endif
@@ -96,12 +92,12 @@ public:
 		return m_path;
 	}
 
-// MARK: - File handle state
+	// MARK: - File handle state
 
 private:
 	friend class OperationCopier;
 	static std::unique_ptr<OperationFile> openImpl(const QString &path, bool create, bool writable,
-											QString &error);
+												   QString &error);
 	OperationFile() = default;
 	QFile m_file;
 	QString m_path;

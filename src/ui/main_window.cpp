@@ -19,8 +19,6 @@
 #include <QApplication>
 #include <QCloseEvent>
 #include <QClipboard>
-#include <QDateTime>
-#include <QDebug>
 #include <QDesktopServices>
 #include <QDialog>
 #include <QDir>
