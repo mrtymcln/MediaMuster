@@ -20,7 +20,7 @@ if(APPLE)
     endif()
 endif()
 
-project(MediaMuster VERSION 0.0.3 LANGUAGES CXX)
+project(MediaMuster VERSION 1.0.0 LANGUAGES CXX)
 if(DEFINED ENV{APP_VERSION} AND NOT "$ENV{APP_VERSION}" STREQUAL "${PROJECT_VERSION}")
     message(FATAL_ERROR "APP_VERSION $ENV{APP_VERSION} does not match project version ${PROJECT_VERSION}")
 endif()

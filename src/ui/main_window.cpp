@@ -41,7 +41,6 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QOperatingSystemVersion>
-#include <QPixmap>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QSet>

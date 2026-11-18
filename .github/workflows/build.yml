@@ -13,7 +13,7 @@ permissions:
 
 # Keep these versions aligned with CMakeLists.
 env:
-  APP_VERSION: "0.0.3"
+  APP_VERSION: "1.0.0"
   QT_VERSION: "6.5.3"
 
 concurrency:
