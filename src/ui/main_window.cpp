@@ -709,6 +709,16 @@ void MainWindow::buildHelpMenu()
 					QMessageBox::warning(this, tr("Send feedback"),
 										 tr("Couldn't open your email app. Please email mrtymcln.dev@gmail.com."));
 			});
+
+	helpMenu->addSeparator();
+
+	auto *geniusDvAction = helpMenu->addAction(tr("Avid training from GeniusDV"));
+	geniusDvAction->setMenuRole(QAction::NoRole);
+	connect(geniusDvAction, &QAction::triggered, this,
+			[]
+			{
+				QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.geniusdv.com/tutorials/")));
+			});
 }
 
 // MARK: - About dialog
