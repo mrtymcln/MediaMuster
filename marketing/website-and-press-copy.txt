@@ -1,0 +1,77 @@
+MediaMuster
+https://martymclean.com/mediamuster
+
+
+Website
+
+Headline
+Copy the bin’s media.
+
+Hero copy
+Load an Avid bin to check which MXFs you’re sending to the next edit room.
+
+Introduction
+MediaMuster is a media manager for Avid editors and assistants on macOS and Windows. Scan your media drives to see which files belong to each project. When another room needs a bin, open its .avb in Filter by Bin and copy the matching media to a shuttle drive.
+
+Scan the drive
+Read the clip name, project and file path on the same row. Select a project to see its files and how much space they take up.
+
+Load the bin
+A bin can reference media from several folders or drives. Load the bin to pull those files into one list. If you need the list for a handover, export it as a CSV.
+
+Check the copy
+Choose a destination and tick Preserve Avid folder structure. The preview shows the path every selected file will take, down to the numbered MXF folder on the receiving drive.
+
+Press kit link
+Download the press kit
+
+Search description
+Scan Avid media drives, find the MXFs referenced by a bin and preview a copy to another drive. MediaMuster runs on macOS and Windows.
+
+
+Press
+
+One sentence
+MediaMuster shows Avid editors where a bin’s media lives and lets them copy it to another drive.
+
+Short description
+MediaMuster is a desktop media manager by Marty McLean for editors and assistants working in Avid Media Composer. It scans Avid-managed MXF OP-Atom folders and lists each file alongside its clip, bin and project metadata. Editors can filter that inventory with an Avid bin, copy or move the media they select, and export a file list as a CSV. MediaMuster runs on macOS and Windows.
+
+Product website
+https://martymclean.com/mediamuster
+
+
+Screenshot captions and alt text
+
+media-inventory.png
+Caption — The clip is 00_1d.avi in the bin. On disk, the picture is 00_1d.V01.mxf in Avid MediaFiles/MXF/1.
+Alt — MediaMuster lists 22 MXFs for Tears of Steel. Shot 00_1d.avi is selected, with its full path on MXF_01 visible in the same row.
+
+filter-by-bin.png
+Caption — Three bins are loaded. Only the DVD surround mix is checked.
+Alt — Filter by Bin shows TOS_DVDSURROUND checked, SC 02 and SC 03 unchecked, and one Intersect step.
+
+bin-selection.png
+Caption — The sound bin matches the six mono channels of the DVD mix. Together they occupy 634.2 MB.
+Alt — MediaMuster lists six 48 kHz files from the Printmasters bin. Their clip names identify the left, right, centre, LFE and two surround channels.
+
+copy-preview.png
+Caption — The six mix channels will go into Avid MediaFiles/MXF/2 on SHUTTLE.
+Alt — The Manage Media window shows Copy and Preserve Avid folder structure selected. Each source path on MXF_01 is paired with its destination on SHUTTLE.
+
+website-hero.webp
+Alt — MediaMuster for macOS and Windows. The TOS_DVDSURROUND bin matches six of 22 scanned files, with SHUTTLE chosen as the copy destination.
+
+mediamuster-icon.png
+Alt — A black-and-tan dog holding a blue folder.
+
+
+Sample media credit
+
+Tears of Steel © Blender Foundation (mango.blender.org). Licensed under Creative Commons Attribution 3.0. The screenshots retain the published filenames of 16 shot review movies and six mono DVD surround channels. The editing MXFs were transcoded from those files, and the Avid bins and drive layout were prepared for the demonstration.
+
+Source archive
+https://media.xiph.org/tearsofsteel/
+
+Licence
+https://creativecommons.org/licenses/by/3.0/

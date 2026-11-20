@@ -119,12 +119,12 @@ void ManageMediaDialog::setupUi()
 					 "Originals are untouched.")));
 	opLayout->addWidget(
 		makeOpRow(m_radioMove, tr("Move"),
-				  tr("Move the selected files to a new location. When copying is needed, "
-					 "all originals are kept until every required copy succeeds.")));
+				  tr("Move the selected files. Originals are removed after a "
+					 "successful copy.")));
 	opLayout->addWidget(
 		makeOpRow(m_radioDelete, tr("Delete"),
-				  tr("Move the selected files to the system Trash. Network and NEXIS drives "
-					 "use MediaMuster Trash on the same drive. Emptying Trash frees space.")));
+				  tr("Delete the selected files. Deleted files can be recovered "
+					 "from the trash.")));
 
 	m_radioCopy->setChecked(true);
 

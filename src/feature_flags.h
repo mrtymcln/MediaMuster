@@ -2,7 +2,7 @@
 
 namespace FeatureFlags
 {
-	inline constexpr bool kOmfScan = true;
-	inline constexpr bool kPrecomputeFilter = true;
-	inline constexpr bool kUndo = true;
+	inline constexpr bool kOmfScan = false;
+	inline constexpr bool kPrecomputeFilter = false;
+	inline constexpr bool kUndo = false;
 }
