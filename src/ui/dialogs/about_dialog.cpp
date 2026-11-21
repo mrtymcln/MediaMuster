@@ -100,8 +100,10 @@ namespace
 		addCredit(AboutDialog::tr("Special Thanks"),
 				  QStringLiteral("Jack Brown\n"
 								 "Ben Gold\n"
+								 "Hamada Hanoura\n"
 								 "Nathan Katsikaros\n"
 								 "John Lynn\n"
+								 "Sandro Mazzanti\n"
 								 "Harry B. Miller III\n"
 								 "Jean-Denis Rouette\n"
 								 "Nacho Santana"));

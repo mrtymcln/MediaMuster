@@ -69,6 +69,7 @@
 namespace
 {
 	constexpr auto kScanConnection = Qt::AutoConnection;
+	const QString kPromotionalLink = QStringLiteral("https://www.geniusdv.com/tutorials/");
 
 	/// Monospaced font for the Console.
 	QFont monoFont()
@@ -548,6 +549,15 @@ void MainWindow::buildStatusBar()
 	statusBar()->addWidget(m_statusSep2);
 	statusBar()->addWidget(m_statusSelSize);
 	statusBar()->addPermanentWidget(m_statusScanTime);
+
+	if constexpr (FeatureFlags::kPromotionalLink)
+	{
+		auto *promotionalLink = new QLabel(QStringLiteral("<a href=\"%1\">GeniusDV</a>").arg(kPromotionalLink));
+		promotionalLink->setObjectName(QStringLiteral("PromotionalLink"));
+		promotionalLink->setTextInteractionFlags(Qt::LinksAccessibleByMouse | Qt::LinksAccessibleByKeyboard);
+		promotionalLink->setOpenExternalLinks(true);
+		statusBar()->addPermanentWidget(promotionalLink);
+	}
 }
 
 // MARK: - Menus
@@ -710,15 +720,18 @@ void MainWindow::buildHelpMenu()
 										 tr("Couldn't open your email app. Please email mrtymcln.dev@gmail.com."));
 			});
 
-	helpMenu->addSeparator();
-
-	auto *geniusDvAction = helpMenu->addAction(tr("Avid training from GeniusDV"));
-	geniusDvAction->setMenuRole(QAction::NoRole);
-	connect(geniusDvAction, &QAction::triggered, this,
-			[]
-			{
-				QDesktopServices::openUrl(QUrl(QStringLiteral("https://www.geniusdv.com/tutorials/")));
-			});
+	if constexpr (FeatureFlags::kPromotionalLink)
+	{
+		helpMenu->addSeparator();
+		auto *promotionalLink = helpMenu->addAction(tr("Avid training from GeniusDV"));
+		promotionalLink->setObjectName(QStringLiteral("PromotionalLink"));
+		promotionalLink->setMenuRole(QAction::NoRole);
+		connect(promotionalLink, &QAction::triggered, this,
+				[]
+				{
+					QDesktopServices::openUrl(QUrl(kPromotionalLink));
+				});
+	}
 }
 
 // MARK: - About dialog

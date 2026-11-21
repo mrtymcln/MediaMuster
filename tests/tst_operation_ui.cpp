@@ -1162,6 +1162,8 @@ void TestOperationUi::feature_flags_configure_startup_and_text_undo_works()
 	MainWindow window(nullptr, MainWindow::StartupMode::UiOnly);
 	window.show();
 	QVERIFY(!window.findChild<QMenu *>(QStringLiteral("debugMenu")));
+	QCOMPARE(window.findChild<QLabel *>(QStringLiteral("PromotionalLink")) != nullptr, FeatureFlags::kPromotionalLink);
+	QCOMPARE(window.findChild<QAction *>(QStringLiteral("PromotionalLink")) != nullptr, FeatureFlags::kPromotionalLink);
 	for (const auto *name : {"enableOmfDebugAction", "enablePrecomputesDebugAction", "enableUndoDebugAction"})
 		QVERIFY(!window.findChild<QAction *>(QString::fromLatin1(name)));
 	QCOMPARE(window.m_omfScanEnabled, FeatureFlags::kOmfScan);

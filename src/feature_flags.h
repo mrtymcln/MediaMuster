@@ -5,4 +5,5 @@ namespace FeatureFlags
 	inline constexpr bool kOmfScan = false;
 	inline constexpr bool kPrecomputeFilter = false;
 	inline constexpr bool kUndo = false;
+	inline constexpr bool kPromotionalLink = true;
 }
