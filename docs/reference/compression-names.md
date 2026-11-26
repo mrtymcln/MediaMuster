@@ -71,6 +71,13 @@ the filename is not the evidence for that name.
 
 ## Uncompressed, alpha and audio
 
+Compression shows `DNxUncompressed` for every recognised variant. Bit Depth
+shows the interpreted precision when the metadata establishes one value. For
+example, 10-bit and 12-bit integer media display as `10-bit` and `12-bit`.
+Media Composer’s `dfm/dnx_uncompressed.lua` maps four older picture coding
+labels to the standard or fixed-point RDD 50 labels. The readers and the
+Compression lookup share that mapping.
+
 For complete DNxUncompressed coding ULs in **RDD 50 Table 5**, interpret the
 coding flavour and component depth together. The suffixes below summarise the
 full labels in that table. Require a full-label match for every entry.
@@ -89,7 +96,7 @@ through the relevant PixelLayout/Alpha Sample Depth; alpha can have a different
 representation from colour. Presence of alpha does not establish translucent
 pixels or alpha in a related colour file. Explicit legacy `NONE` plus a complete
 sole-alpha component description establishes uncompressed alpha; alpha presence
-alone does not. DNxRLE Alpha retains its separately qualified catalogue name.
+alone does not. DNxUncompressed RLE alpha media uses the same family name.
 
 Native WAVE/AIFF and copied database summary encodings distinguish PCM/float,
 storage width, valid precision, frequency and textual compression names. AIFF-C

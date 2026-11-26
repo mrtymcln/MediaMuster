@@ -720,10 +720,20 @@ void MainWindow::buildHelpMenu()
 										 tr("Couldn't open your email app. Please email mrtymcln.dev@gmail.com."));
 			});
 
+	helpMenu->addSeparator();
+	helpMenu->addAction(tr("Meet the developer"))->setEnabled(false);
+	auto *developerLink = helpMenu->addAction(QStringLiteral("Marty McLean"));
+	developerLink->setMenuRole(QAction::NoRole);
+	connect(developerLink, &QAction::triggered, this,
+			[]
+			{
+				QDesktopServices::openUrl(QUrl(QStringLiteral("https://martymclean.com")));
+			});
+
 	if constexpr (FeatureFlags::kPromotionalLink)
 	{
-		helpMenu->addSeparator();
-		auto *promotionalLink = helpMenu->addAction(tr("Avid training from GeniusDV"));
+		helpMenu->addAction(tr("Avid certified training"))->setEnabled(false);
+		auto *promotionalLink = helpMenu->addAction(QStringLiteral("GeniusDV"));
 		promotionalLink->setObjectName(QStringLiteral("PromotionalLink"));
 		promotionalLink->setMenuRole(QAction::NoRole);
 		connect(promotionalLink, &QAction::triggered, this,

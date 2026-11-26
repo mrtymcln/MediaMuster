@@ -7,9 +7,6 @@
 #include "scanner_lookup/dnx_names.h"
 #include "scanner_lookup/effect_catalogue.h"
 
-#include <QByteArrayView>
-#include <QStringList>
-#include <algorithm>
 #include <array>
 #include <utility>
 
@@ -65,59 +62,6 @@ namespace Bella
 			return facts;
 		}
 
-		struct NumericFormatText
-		{
-			QString bitDepthText;
-			QString sampleFormatText;
-		};
-
-		NumericFormatText numericFormatText(const QByteArray &coding, qint64 raw, bool mxf)
-		{
-			static const auto kDnxUncompressedCodingLabel = QByteArray::fromHex("060e2b340401010d0401020203070100");
-			static const auto kDnxUncompressedFixedPointCodingLabel = QByteArray::fromHex("060e2b340401010d0401020203070200");
-			if (coding == kDnxUncompressedCodingLabel)
-			{
-				if (raw == 253)
-					return {QStringLiteral("16-bit"), QStringLiteral("Half float")};
-				if (raw == 254)
-					return {QStringLiteral("32-bit"), QStringLiteral("Float")};
-				if (raw == 8 || raw == 10 || raw == 12 || raw == 16)
-					return {QStringLiteral("%1-bit").arg(raw), QStringLiteral("Integer")};
-			}
-			else if (coding == kDnxUncompressedFixedPointCodingLabel)
-			{
-				if (raw == 254)
-					return {QStringLiteral("16-bit"), QStringLiteral("S2.14 fixed point")};
-				if (raw == 10 || raw == 12)
-					return {QStringLiteral("16-bit"),
-							raw == 10 ? QStringLiteral("10.6 fixed point") : QStringLiteral("12.4 fixed point")};
-			}
-			else if (mxf)
-			{
-				if (raw == 253)
-					return {QStringLiteral("16-bit"), QStringLiteral("Half float")};
-				if (raw == 254)
-					return {QStringLiteral("32-bit"), QStringLiteral("Float")};
-				if (raw == 255)
-					return {QStringLiteral("64-bit"), QStringLiteral("64-bit float")};
-				if (raw > 0 && raw <= 32)
-					return {QStringLiteral("%1-bit").arg(raw), QStringLiteral("Integer")};
-			}
-			// Legacy numeric widths can survive without a supported representation.
-			return {!mxf && raw > 0 && raw <= 64 ? QStringLiteral("%1-bit").arg(raw) : QString{}, {}};
-		}
-
-		template <typename File>
-		void legacyNumericFormat(Facts &facts, const File &file)
-		{
-			// Legacy RGBA supplies a common width, not a SampleFormat description.
-			if (facts.descriptorClass == QLatin1String("RGBA") || !file.bitDepth.rawComponentWidth)
-				return;
-			const auto format = numericFormatText(facts.codingLabel, *file.bitDepth.rawComponentWidth, false);
-			facts.bitDepthText = format.bitDepthText;
-			facts.sampleFormatText = format.sampleFormatText;
-		}
-
 		bool hasSingleComponentValue(const MdbComponentArray &value, quint8 expected)
 		{
 			return (value.count == 1 || (value.count == 2 && value.values[1] == 0)) && value.values[0] == expected;
@@ -150,88 +94,6 @@ namespace Bella
 			return {};
 		}
 
-		std::optional<qint64> mxfDnxAlphaDepth(const MxfFileInformation &file, const Facts &facts)
-		{
-			static const auto kDnxUncompressedCodingLabel = QByteArray::fromHex("060e2b340401010d0401020203070100");
-			if (facts.codingLabel != kDnxUncompressedCodingLabel ||
-				facts.descriptorClass != QLatin1String("RGBAEssenceDescriptor") || !file.bitDepth.pixelLayout)
-				return std::nullopt;
-			std::optional<qint64> alphaDepth;
-			bool ended = false;
-			// Recheck the layout because the reader also retains rejected layouts.
-			for (std::size_t i = 0; i < 16; i += 2)
-			{
-				const auto code = (*file.bitDepth.pixelLayout)[i], raw = (*file.bitDepth.pixelLayout)[i + 1];
-				if ((code == 0 || code == '0') && raw == 0)
-				{
-					ended = true;
-					continue;
-				}
-				if (ended)
-					return std::nullopt;
-				if (code == 'F')
-					continue;
-				if (code != 'A' || alphaDepth || (raw != 8 && raw != 16))
-					return std::nullopt;
-				alphaDepth = raw;
-			}
-			return alphaDepth;
-		}
-
-		QString compactComponentText(const QStringList &components)
-		{
-			if (components.isEmpty())
-				return {};
-			const auto value = [](const QString &component)
-			{
-				return component.mid(component.indexOf(QLatin1String(": ")) + 2);
-			};
-			const auto first = value(components.first());
-			return std::all_of(components.begin(), components.end(),
-							   [&](const QString &component)
-							   { return value(component) == first; })
-					   ? first
-					   : components.join(QStringLiteral("; "));
-		}
-
-		void mxfNumericFormat(Facts &facts, const MxfFileInformation &file)
-		{
-			if (file.bitDepth.rawComponentDepth)
-			{
-				const auto format = numericFormatText(facts.codingLabel, *file.bitDepth.rawComponentDepth, true);
-				facts.bitDepthText = format.bitDepthText;
-				facts.sampleFormatText = format.sampleFormatText;
-			}
-			if (!file.bitDepth.pixelLayout)
-				return;
-			QStringList depths, formats;
-			bool ended = false;
-			for (std::size_t i = 0; i < 16; i += 2)
-			{
-				const auto code = (*file.bitDepth.pixelLayout)[i], raw = (*file.bitDepth.pixelLayout)[i + 1];
-				if (code == 0 && raw == 0)
-				{
-					ended = true;
-					continue;
-				}
-				if (ended || code == 0 || raw == 0 || code == 'P' ||
-					(!QByteArrayView("RGBArgbaFUVWXYZuvwxyz").contains(char(code)) && code != 0xd8 && code != 0xd9 &&
-					 code != 0xda))
-					return;
-				if (code == 'F')
-					continue;
-				const auto format = numericFormatText(facts.codingLabel, raw, true);
-				if (!format.bitDepthText.isEmpty())
-					depths.append(QStringLiteral("%1: %2").arg(QChar(code)).arg(format.bitDepthText));
-				if (!format.sampleFormatText.isEmpty())
-					formats.append(QStringLiteral("%1: %2").arg(QChar(code)).arg(format.sampleFormatText));
-			}
-			if (!depths.isEmpty())
-				facts.bitDepthText = compactComponentText(depths);
-			if (!formats.isEmpty())
-				facts.sampleFormatText = compactComponentText(formats);
-		}
-
 		template <typename Encoding>
 		QString audioCompressionName(Encoding encoding)
 		{
@@ -261,7 +123,6 @@ namespace Bella
 		if (!file.ownDescriptorQualified)
 			return {};
 		auto facts = legacyCompressionFacts(file);
-		legacyNumericFormat(facts, file);
 		facts.alphaChannelBitDepth = mdbAlphaDepth(file, facts);
 		return resolvedCompressionNames(facts, audioCompressionName(file.compression.audioEncoding));
 	}
@@ -269,7 +130,6 @@ namespace Bella
 	CompressionNames compressionNamesFor(const OmfFileInformation &file)
 	{
 		auto facts = legacyCompressionFacts(file);
-		legacyNumericFormat(facts, file);
 		if (facts.isCodingPropertyAbsent && facts.descriptorClass == QLatin1String("RGBA") && facts.legacyCompressionIdentifier == "NONE")
 			facts.alphaChannelBitDepth = file.compression.alphaDepth;
 		return resolvedCompressionNames(facts, audioCompressionName(file.compression.audioEncoding));
@@ -291,8 +151,6 @@ namespace Bella
 		facts.rawComponentDepth = file.bitDepth.rawComponentDepth;
 		facts.horizontalSubsampling = coding.horizontalSubsampling;
 		facts.verticalSubsampling = coding.verticalSubsampling;
-		mxfNumericFormat(facts, file);
-		facts.alphaChannelBitDepth = mxfDnxAlphaDepth(file, facts);
 		auto names = resolvedCompressionNames(facts);
 		if (names.compressionName.isEmpty() && facts.isCodingPropertyAbsent)
 		{

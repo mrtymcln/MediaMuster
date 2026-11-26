@@ -1,4 +1,5 @@
 #include "dnx_names.h"
+#include "scanner/dnx_uncompressed_p.h"
 
 #include <algorithm>
 #include <array>
@@ -117,32 +118,16 @@ namespace Bella::Lookup
 			{"DNx TR", QByteArray::fromHex("060e2b340401010d0401020271190000")},
 			{"DNx TR", QByteArray::fromHex("060e2b340401010d04010202711a0000")},
 		}};
-
-		QString dnxUncompressedName(const CompressionFacts &facts)
-		{
-			static const auto kDnxUncompressedCodingLabel = QByteArray::fromHex("060e2b340401010d0401020203070100");
-			static const auto kDnxUncompressedFixedPointCodingLabel = QByteArray::fromHex("060e2b340401010d0401020203070200");
-			static const auto kDnxUncompressedLegacyRleCodingLabel = QByteArray::fromHex("060e2b34040101030e04410101030000");
-			if (facts.codingLabel == kDnxUncompressedLegacyRleCodingLabel)
-				return QStringLiteral("DNxUncompressed");
-
-			// RLE alpha has 8-bit and 16-bit flavours. Keep the display name at the family level.
-			if (facts.codingLabel == kDnxUncompressedCodingLabel && (facts.alphaChannelBitDepth == 8 || facts.alphaChannelBitDepth == 16))
-				return QStringLiteral("DNxUncompressed");
-
-			if (facts.codingLabel != kDnxUncompressedCodingLabel && facts.codingLabel != kDnxUncompressedFixedPointCodingLabel)
-				return {};
-
-			QString name = QStringLiteral("DNxUncompressed");
-			if (!facts.bitDepthText.isEmpty() && !facts.sampleFormatText.isEmpty())
-				name += QStringLiteral(" — %1 %2").arg(facts.bitDepthText, facts.sampleFormatText);
-			return name;
-		}
 	}
 
 	CompressionNames dnxNames(const CompressionFacts &facts)
 	{
 		CompressionNames result;
+		if (Detail::dnxUncompressedCoding(facts.codingLabel) != Detail::DnxUncompressedCoding::Unknown)
+		{
+			result.compressionName = QStringLiteral("DNxUncompressed");
+			return result;
+		}
 		for (const auto &entry : kDnxFlavours)
 		{
 			if (facts.codingLabel != entry.codingLabel)
@@ -156,9 +141,6 @@ namespace Bella::Lookup
 				result.compressionName += QStringLiteral(" [%1]").arg(result.reallyOldDnx);
 			return result;
 		}
-		result.compressionName = dnxUncompressedName(facts);
-		if (!result.compressionName.isEmpty())
-			return result;
 
 		for (const auto &row : kDnxCompression)
 		{

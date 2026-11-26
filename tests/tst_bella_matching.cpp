@@ -173,6 +173,7 @@ private slots:
 	void exactPmrNames_data();
 	void exactPmrNames();
 	void selectedFieldPriorities();
+	void dnxUncompressedIntegerBitDepth();
 	void selectedFixedPointBitDepth_data();
 	void selectedFixedPointBitDepth();
 	void headerNeeded_data();
@@ -360,6 +361,22 @@ void TestBellaMatching::selectedFieldPriorities()
 	QCOMPARE(label(m.timing), QStringLiteral("00:01:00:00"));
 	QCOMPARE(answer.localReference, Bella::LocalReference::Listed);
 	QVERIFY(!answer.needsHeader);
+}
+
+void TestBellaMatching::dnxUncompressedIntegerBitDepth()
+{
+	const auto context = Bella::prepareMatchContext({}, {}, {folder});
+	auto header = mxf();
+	auto &file = header.fileInformation;
+	file.compression.codingLabel = coding("060e2b340401010d0401020203070100");
+	for (const quint32 bits : {10u, 12u})
+	{
+		file.bitDepth.rawComponentDepth = bits;
+		file.bitDepth.bits = bits;
+		const auto match = Bella::matchFile(context, physical, true, std::cref(header), false);
+		QCOMPARE(match.metadata.compression.compressionName, QStringLiteral("DNxUncompressed"));
+		QCOMPARE(match.metadata.interpretedBitDepth, std::optional<quint32>(bits));
+	}
 }
 
 void TestBellaMatching::selectedFixedPointBitDepth_data()

@@ -353,113 +353,76 @@ void TestBellaMediaLabels::jpeg2000NameIgnoresRateEncoding()
 
 void TestBellaMediaLabels::uncompressedRepresentations_data()
 {
-	QTest::addColumn<int>("variation");
-	QTest::addColumn<QString>("description");
-	QTest::newRow("standard float") << 0 << QStringLiteral("32-bit Float");
-	QTest::newRow("standard half float") << 1 << QStringLiteral("16-bit Half float");
-	QTest::newRow("standard integer") << 2 << QStringLiteral("10-bit Integer");
-	QTest::newRow("fixed S2.14") << 3 << QStringLiteral("16-bit S2.14 fixed point");
-	QTest::newRow("fixed 10.6 naming survives blank generic depth") << 4 << QStringLiteral("16-bit 10.6 fixed point");
-	QTest::newRow("fixed 12.4 naming survives blank generic depth") << 5 << QStringLiteral("16-bit 12.4 fixed point");
+	QTest::addColumn<bool>("fixedPoint");
+	QTest::addColumn<quint32>("rawDepth");
+	QTest::newRow("10-bit integer") << false << 10u;
+	QTest::newRow("12-bit integer") << false << 12u;
+	QTest::newRow("float") << false << 254u;
+	QTest::newRow("half float") << false << 253u;
+	QTest::newRow("fixed S2.14") << true << 254u;
+	QTest::newRow("fixed 10.6") << true << 10u;
+	QTest::newRow("fixed 12.4") << true << 12u;
 }
 void TestBellaMediaLabels::uncompressedRepresentations()
 {
-	QFETCH(int, variation);
-	QFETCH(QString, description);
+	QFETCH(bool, fixedPoint);
+	QFETCH(quint32, rawDepth);
 	auto mdb = mdbHqx();
 	auto omf = omfHqx();
 	auto mxf = mxfHqx();
-	const auto coding = variation < 3 ? standardUncompressed : fixedUncompressed;
+	const auto coding = fixedPoint ? fixedUncompressed : standardUncompressed;
 	mdb.compression.codingLabel = coding;
 	omf.compression.codingLabel = coding;
 	mxf.compression.codingLabel = coding;
-	const qint32 raw = variation == 0 || variation == 3 ? 254 : variation == 1 ? 253
-															: variation == 5   ? 12
-																			   : 10;
-	mdb.bitDepth.rawComponentWidth = raw;
-	omf.bitDepth.rawComponentWidth = raw;
-	mxf.bitDepth.rawComponentDepth = quint32(raw);
-	const auto depth = variation == 0 ? 32u : variation == 2 ? 10u
-															 : 16u;
-	mdb.bitDepth.bits = depth;
-	omf.bitDepth.bits = depth;
-	mxf.bitDepth.bits = depth;
-	mdb.bitDepth.representation = std::array{Bella::MdbDepthRepresentation::Float, Bella::MdbDepthRepresentation::HalfFloat,
-											 Bella::MdbDepthRepresentation::Integer, Bella::MdbDepthRepresentation::S2_14Fixed,
-											 Bella::MdbDepthRepresentation::Fixed10_6, Bella::MdbDepthRepresentation::Fixed12_4}[variation];
-	omf.bitDepth.representation = std::array{Bella::OmfDepthRepresentation::Float, Bella::OmfDepthRepresentation::HalfFloat,
-											 Bella::OmfDepthRepresentation::Integer, Bella::OmfDepthRepresentation::S2_14Fixed,
-											 Bella::OmfDepthRepresentation::Fixed10_6, Bella::OmfDepthRepresentation::Fixed12_4}[variation];
-	mxf.bitDepth.representation = std::array{Bella::MxfDepthRepresentation::Float, Bella::MxfDepthRepresentation::HalfFloat,
-											 Bella::MxfDepthRepresentation::Integer, Bella::MxfDepthRepresentation::S2_14Fixed,
-											 Bella::MxfDepthRepresentation::Fixed10_6, Bella::MxfDepthRepresentation::Fixed12_4}[variation];
-	if (variation >= 4)
-	{
-		mdb.bitDepth.bits.reset();
-		omf.bitDepth.bits.reset();
-		mxf.bitDepth.bits.reset();
-	}
+	mdb.bitDepth.rawComponentWidth = qint32(rawDepth);
+	omf.bitDepth.rawComponentWidth = qint32(rawDepth);
+	mxf.bitDepth.rawComponentDepth = rawDepth;
 	for (const auto &names : {Bella::compressionNamesFor(mdb), Bella::compressionNamesFor(omf), Bella::compressionNamesFor(mxf)})
-		expectNames(names, QStringLiteral("DNxUncompressed — ") + description);
+		expectNames(names, QStringLiteral("DNxUncompressed"));
 }
 
 void TestBellaMediaLabels::mixedMxfComponents_data()
 {
-	QTest::addColumn<bool>("mixed");
-	QTest::newRow("distinct component order and representation retained") << true;
-	QTest::newRow("uniform components compact to one value") << false;
+	QTest::addColumn<QByteArray>("layout");
+	QTest::newRow("mixed representations") << QByteArray::fromHex("410852fe47fd420a0000000000000000");
+	QTest::newRow("mixed integer widths") << QByteArray::fromHex("520c470a420a00000000000000000000");
+	QTest::newRow("common integer width with fill") << QByteArray::fromHex("4608520a470a420a0000000000000000");
 }
 void TestBellaMediaLabels::mixedMxfComponents()
 {
-	QFETCH(bool, mixed);
+	QFETCH(QByteArray, layout);
 	auto file = mxfHqx();
 	file.descriptorClass = mxfRgba;
 	file.compression.codingLabel = standardUncompressed;
-	file.bitDepth.bits.reset();
-	file.bitDepth.representation = Bella::MxfDepthRepresentation::Unknown;
-	file.bitDepth.rawComponentDepth.reset();
-	file.bitDepth.pixelLayout = mixed ? std::array<quint8, 16>{'A', 8, 'R', 254, 'G', 253, 'B', 10}
-									  : std::array<quint8, 16>{'F', 8, 'R', 10, 'G', 10, 'B', 10};
-	expectNames(Bella::compressionNamesFor(file), mixed
-													  ? QStringLiteral("DNxUncompressed — A: 8-bit; R: 32-bit; G: 16-bit; B: 10-bit A: Integer; R: Float; G: Half float; B: Integer")
-													  : QStringLiteral("DNxUncompressed — 10-bit Integer"));
+	file.bitDepth = {};
+	file.bitDepth.pixelLayout = hexBytes<16>(layout.toHex().constData());
+	expectNames(Bella::compressionNamesFor(file), QStringLiteral("DNxUncompressed"));
 }
 
 void TestBellaMediaLabels::dnxAlphaLayout_data()
 {
 	QTest::addColumn<QByteArray>("layout");
-	QTest::addColumn<bool>("soleAlpha");
-	QTest::newRow("alpha-8") << QByteArray::fromHex("41080000000000000000000000000000") << true;
-	QTest::newRow("alpha-16") << QByteArray::fromHex("41100000000000000000000000000000") << true;
+	QTest::newRow("alpha-8") << QByteArray::fromHex("41080000000000000000000000000000");
+	QTest::newRow("alpha-16") << QByteArray::fromHex("41100000000000000000000000000000");
 	// The supplied Media Composer matte uses both zero and '0' padding.
-	QTest::newRow("recorded-alpha-16") << QByteArray::fromHex("41100000300030003000300030003000") << true;
-	QTest::newRow("alpha-with-fill") << QByteArray::fromHex("46084108000000000000000000000000") << true;
-	QTest::newRow("duplicate-alpha") << QByteArray::fromHex("41084108000000000000000000000000") << false;
-	QTest::newRow("rgb-and-alpha") << QByteArray::fromHex("52084708420841080000000000000000") << false;
-	QTest::newRow("unsupported-alpha-depth") << QByteArray::fromHex("410a0000000000000000000000000000") << false;
-	QTest::newRow("unknown-component") << QByteArray::fromHex("51084108000000000000000000000000") << false;
-	QTest::newRow("component-after-terminator") << QByteArray::fromHex("00004108000000000000000000000000") << false;
-	QTest::newRow("no-alpha") << QByteArray::fromHex("46080000000000000000000000000000") << false;
+	QTest::newRow("recorded-alpha-16") << QByteArray::fromHex("41100000300030003000300030003000");
+	QTest::newRow("alpha-with-fill") << QByteArray::fromHex("46084108000000000000000000000000");
+	QTest::newRow("duplicate-alpha") << QByteArray::fromHex("41084108000000000000000000000000");
+	QTest::newRow("rgb-and-alpha") << QByteArray::fromHex("52084708420841080000000000000000");
+	QTest::newRow("unsupported-alpha-depth") << QByteArray::fromHex("410a0000000000000000000000000000");
+	QTest::newRow("unknown-component") << QByteArray::fromHex("51084108000000000000000000000000");
+	QTest::newRow("component-after-terminator") << QByteArray::fromHex("00004108000000000000000000000000");
+	QTest::newRow("no-alpha") << QByteArray::fromHex("46080000000000000000000000000000");
 }
 
 void TestBellaMediaLabels::dnxAlphaLayout()
 {
 	QFETCH(QByteArray, layout);
-	QFETCH(bool, soleAlpha);
 	auto file = mxfHqx();
 	file.descriptorClass = mxfRgba;
 	file.compression.codingLabel = standardUncompressed;
 	file.bitDepth.pixelLayout = hexBytes<16>(layout.toHex().constData());
-	const auto names = Bella::compressionNamesFor(file);
-	if (soleAlpha)
-		expectNames(names, QStringLiteral("DNxUncompressed"));
-	else
-	{
-		QVERIFY(names.compressionName.startsWith(QLatin1String("DNxUncompressed")));
-		QVERIFY(names.newDnx.isEmpty());
-		QVERIFY(names.oldDnx.isEmpty());
-		QVERIFY(names.reallyOldDnx.isEmpty());
-	}
+	expectNames(Bella::compressionNamesFor(file), QStringLiteral("DNxUncompressed"));
 }
 
 void TestBellaMediaLabels::dnxAlphaNeedsMatchingMetadata_data()
@@ -469,9 +432,9 @@ void TestBellaMediaLabels::dnxAlphaNeedsMatchingMetadata_data()
 	QTest::newRow("unavailable-coding") << 0 << QString{};
 	QTest::newRow("absent-coding") << 1 << QString{};
 	QTest::newRow("unknown-coding") << 2 << QString{};
-	QTest::newRow("cdci-descriptor") << 3 << QStringLiteral("DNxUncompressed — 8-bit Integer");
-	QTest::newRow("missing-layout") << 4 << QStringLiteral("DNxUncompressed — 10-bit Integer");
-	QTest::newRow("fixed-point-label") << 5 << QStringLiteral("DNxUncompressed — 16-bit S2.14 fixed point");
+	QTest::newRow("cdci-descriptor") << 3 << QStringLiteral("DNxUncompressed");
+	QTest::newRow("missing-layout") << 4 << QStringLiteral("DNxUncompressed");
+	QTest::newRow("fixed-point-label") << 5 << QStringLiteral("DNxUncompressed");
 	QTest::newRow("dnxhr-lb-colour") << 6 << QStringLiteral("DNx LB");
 }
 

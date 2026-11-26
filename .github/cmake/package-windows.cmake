@@ -10,6 +10,8 @@ set(_dist_dir "${_build_dir}/dist")
 set(_package_dir "${_build_dir}/MediaMuster-$ENV{APP_VERSION}-Win")
 file(MAKE_DIRECTORY "${_dist_dir}")
 file(COPY "${_build_dir}/Release/MediaMuster.exe" DESTINATION "${_dist_dir}")
+file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt" "${CMAKE_CURRENT_SOURCE_DIR}/Licences"
+    DESTINATION "${_dist_dir}")
 
 find_program(_windeployqt NAMES windeployqt HINTS "$ENV{QT_ROOT_DIR}/bin" REQUIRED)
 execute_process(

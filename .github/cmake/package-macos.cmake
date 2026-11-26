@@ -99,6 +99,10 @@ set(staging "${createdStaging}")
 
 # Preserve the app's framework symlinks and native copy semantics.
 runChecked("Copying application to DMG staging failed" ditto "${app}" "${staging}/MediaMuster.app")
+runChecked("Copying ReadMe to DMG staging failed"
+    "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_SOURCE_DIR}/ReadMe.txt" "${staging}/ReadMe.txt")
+runChecked("Copying licences to DMG staging failed"
+    "${CMAKE_COMMAND}" -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/Licences" "${staging}/Licences")
 runChecked("Creating Applications shortcut failed"
     "${CMAKE_COMMAND}" -E create_symlink /Applications "${staging}/Applications")
 runChecked("Flushing DMG staging failed" sync)

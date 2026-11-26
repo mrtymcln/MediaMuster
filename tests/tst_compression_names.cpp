@@ -379,86 +379,26 @@ private slots:
 		QVERIFY(names.reallyOldDnx.isEmpty());
 	}
 
-	void dnx_uncompressed_retains_qualified_flavours_data()
-	{
-		QTest::addColumn<bool>("fixedPoint");
-		QTest::addColumn<QString>("bitDepth");
-		QTest::addColumn<QString>("sampleFormat");
-		QTest::addColumn<QString>("expected");
-		QTest::newRow("standard-float") << false << QStringLiteral("32-bit") << QStringLiteral("Float")
-										<< QStringLiteral("DNxUncompressed — 32-bit Float");
-		QTest::newRow("standard-half") << false << QStringLiteral("16-bit") << QStringLiteral("Half float")
-									   << QStringLiteral("DNxUncompressed — 16-bit Half float");
-		QTest::newRow("standard-integer") << false << QStringLiteral("10-bit") << QStringLiteral("Integer")
-										  << QStringLiteral("DNxUncompressed — 10-bit Integer");
-		QTest::newRow("fixed-2.14") << true << QStringLiteral("16-bit") << QStringLiteral("S2.14 fixed point")
-									<< QStringLiteral("DNxUncompressed — 16-bit S2.14 fixed point");
-		QTest::newRow("fixed-10.6") << true << QStringLiteral("16-bit") << QStringLiteral("10.6 fixed point")
-									<< QStringLiteral("DNxUncompressed — 16-bit 10.6 fixed point");
-		QTest::newRow("fixed-12.4") << true << QStringLiteral("16-bit") << QStringLiteral("12.4 fixed point")
-									<< QStringLiteral("DNxUncompressed — 16-bit 12.4 fixed point");
-	}
-
-	void dnx_uncompressed_retains_qualified_flavours()
-	{
-		QFETCH(bool, fixedPoint);
-		QFETCH(QString, bitDepth);
-		QFETCH(QString, sampleFormat);
-		QFETCH(QString, expected);
-		Bella::Lookup::CompressionFacts facts;
-		facts.codingLabel = QByteArray::fromHex(fixedPoint ? "060e2b340401010d0401020203070200"
-														   : "060e2b340401010d0401020203070100");
-		facts.bitDepthText = bitDepth;
-		facts.sampleFormatText = sampleFormat;
-		const auto names = Bella::Lookup::compressionNames(facts);
-		QCOMPARE(names.compressionName, expected);
-		QVERIFY(names.newDnx.isEmpty());
-		QVERIFY(names.oldDnx.isEmpty());
-		QVERIFY(names.reallyOldDnx.isEmpty());
-	}
-
-	void dnxUncompressedAlphaBoundaries_data()
+	void dnxUncompressedLabels_data()
 	{
 		QTest::addColumn<QByteArray>("label");
-		QTest::addColumn<qint64>("alphaDepth");
 		QTest::addColumn<QString>("expected");
-		QTest::newRow("standard-zero-alpha")
-			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(0)
-			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
-		QTest::newRow("alpha-8")
-			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(8) << QStringLiteral("DNxUncompressed");
-		QTest::newRow("standard-alpha-10")
-			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(10)
-			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
-		QTest::newRow("alpha-16")
-			<< QByteArray::fromHex("060e2b340401010d0401020203070100") << qint64(16) << QStringLiteral("DNxUncompressed");
-		QTest::newRow("fixed-point-alpha-8")
-			<< QByteArray::fromHex("060e2b340401010d0401020203070200") << qint64(8)
-			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
-		QTest::newRow("fixed-point-alpha-16")
-			<< QByteArray::fromHex("060e2b340401010d0401020203070200") << qint64(16)
-			<< QStringLiteral("DNxUncompressed — 16-bit Integer");
-		QTest::newRow("legacy-rle")
-			<< QByteArray::fromHex("060e2b34040101030e04410101030000") << kMissingAlphaDepth << QStringLiteral("DNxUncompressed");
-		QTest::newRow("legacy-rle-alpha-10")
-			<< QByteArray::fromHex("060e2b34040101030e04410101030000") << qint64(10) << QStringLiteral("DNxUncompressed");
-		QTest::newRow("unknown-alpha-8")
-			<< QByteArray::fromHex("060e2b340401010d040102020307ff00") << qint64(8) << QString{};
-		QTest::newRow("unknown-alpha-16")
-			<< QByteArray::fromHex("060e2b340401010d040102020307ff00") << qint64(16) << QString{};
+		const auto family = QStringLiteral("DNxUncompressed");
+		QTest::newRow("standard") << QByteArray::fromHex("060e2b340401010d0401020203070100") << family;
+		QTest::newRow("fixed-point") << QByteArray::fromHex("060e2b340401010d0401020203070200") << family;
+		QTest::newRow("legacy-standard") << QByteArray::fromHex("060e2b34040101030e04410101010000") << family;
+		QTest::newRow("legacy-fixed") << QByteArray::fromHex("060e2b34040101030e04410101020000") << family;
+		QTest::newRow("legacy-picture-with-rle") << QByteArray::fromHex("060e2b34040101030e04410101040000") << family;
+		QTest::newRow("legacy-rle") << QByteArray::fromHex("060e2b34040101030e04410101030000") << family;
+		QTest::newRow("unknown-label") << QByteArray::fromHex("060e2b340401010d040102020307ff00") << QString{};
 	}
 
-	void dnxUncompressedAlphaBoundaries()
+	void dnxUncompressedLabels()
 	{
 		QFETCH(QByteArray, label);
-		QFETCH(qint64, alphaDepth);
 		QFETCH(QString, expected);
 		Bella::Lookup::CompressionFacts facts;
 		facts.codingLabel = label;
-		if (alphaDepth != kMissingAlphaDepth)
-			facts.alphaChannelBitDepth = alphaDepth;
-		facts.bitDepthText = QStringLiteral("16-bit");
-		facts.sampleFormatText = QStringLiteral("Integer");
 		const auto names = Bella::Lookup::compressionNames(facts);
 		QCOMPARE(names.compressionName, expected);
 		QVERIFY(names.newDnx.isEmpty());

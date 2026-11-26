@@ -1,6 +1,7 @@
 #include "mdb_parser.h"
 #include "audio_format_decoder_p.h"
 #include "avid_avc_proxy_flavours_p.h"
+#include "dnx_uncompressed_p.h"
 #include "file_stamp_p.h"
 #include "media/avid_text.h"
 
@@ -1206,9 +1207,9 @@ namespace Bella
 			if (!raw || *raw < std::numeric_limits<qint32>::min() || *raw > std::numeric_limits<qint32>::max())
 				return;
 			file.bitDepth.rawComponentWidth = qint32(*raw);
-			const auto coding = QByteArrayView(reinterpret_cast<const char *>(file.compression.codingLabel.data()), 16);
-			const bool standard = file.compression.codingState == MdbCodingState::Present && coding == QByteArray::fromHex("060e2b340401010d0401020203070100");
-			const bool fixed = file.compression.codingState == MdbCodingState::Present && coding == QByteArray::fromHex("060e2b340401010d0401020203070200");
+			const auto coding = Detail::recordedDnxUncompressedCoding(file.compression);
+			const bool standard = coding == Detail::DnxUncompressedCoding::Standard;
+			const bool fixed = coding == Detail::DnxUncompressedCoding::FixedPoint;
 			if (*raw == 253 && standard)
 			{
 				file.bitDepth.bits = 16;

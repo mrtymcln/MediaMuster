@@ -31,6 +31,7 @@
  */
 #include "mxf_parser.h"
 #include "avid_avc_proxy_flavours_p.h"
+#include "dnx_uncompressed_p.h"
 #include "file_stamp_p.h"
 #include "identity_check_p.h"
 
@@ -1071,9 +1072,8 @@ namespace Bella
 
 		TechDepth techPictureDepth(quint32 raw, const MxfCompression &compression)
 		{
-			const bool standard = techCodingIs(compression, "060e2b340401010d0401020203070100");
-			const bool fixed = techCodingIs(compression, "060e2b340401010d0401020203070200");
-			if (fixed)
+			const auto coding = Detail::recordedDnxUncompressedCoding(compression);
+			if (coding == Detail::DnxUncompressedCoding::FixedPoint)
 			{
 				if (raw == 254)
 					return {16, MxfDepthRepresentation::S2_14Fixed, true};
@@ -1082,7 +1082,7 @@ namespace Bella
 							raw == 10 ? MxfDepthRepresentation::Fixed10_6 : MxfDepthRepresentation::Fixed12_4, true};
 				return {};
 			}
-			if (standard)
+			if (coding == Detail::DnxUncompressedCoding::Standard)
 			{
 				if (raw == 253)
 					return {16, MxfDepthRepresentation::HalfFloat, true};

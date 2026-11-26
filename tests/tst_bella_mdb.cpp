@@ -2007,6 +2007,8 @@ void TestBellaMdb::specialDepthCodes_data()
 	QTest::newRow("DNx half float") << QByteArray::fromHex("060e2b340401010d0401020203070100") << 253 << quint32(16) << int(Representation::HalfFloat);
 	QTest::newRow("DNx float") << QByteArray::fromHex("060e2b340401010d0401020203070100") << 254 << quint32(32) << int(Representation::Float);
 	QTest::newRow("DNx fixed") << QByteArray::fromHex("060e2b340401010d0401020203070200") << 254 << quint32(16) << int(Representation::S2_14Fixed);
+	QTest::newRow("legacy DNx float") << QByteArray::fromHex("060e2b34040101030e04410101010000") << 254 << quint32(32) << int(Representation::Float);
+	QTest::newRow("legacy DNx fixed") << QByteArray::fromHex("060e2b34040101030e04410101020000") << 254 << quint32(16) << int(Representation::S2_14Fixed);
 }
 
 void TestBellaMdb::specialDepthCodes()

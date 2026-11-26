@@ -25,8 +25,6 @@ namespace Bella::Lookup
 		std::optional<qint64> rawComponentDepth;
 		std::optional<qint64> horizontalSubsampling;
 		std::optional<qint64> verticalSubsampling;
-		QString bitDepthText;
-		QString sampleFormatText;
 		// Set only when the reader finds a single alpha component.
 		std::optional<qint64> alphaChannelBitDepth;
 	};
